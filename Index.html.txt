@@ -1,0 +1,1904 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<script>
+// 아이폰은 스크롤되는 화면의 맨 위 한 뼘을 일부러 흐리게 덮습니다(최신 iOS).
+// 그 자리에 빈 남색 띠를 깔아 제목이 흐려지지 않게 합니다. 안드로이드·PC 는 그대로입니다.
+if (/iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1))
+  document.documentElement.className += ' ios';
+</script>
+<title>일일 안전확인</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a1326; --surface:#0f1b33; --surface2:#16233f; --border:#26375c;
+  /* 현장에서 어르신들이 "하나도 안 보인다" 하셨습니다.
+     흐린 글자색을 통째로 올립니다. 이 한 줄이 모든 화면에 같이 듣습니다. */
+  --text:#f2f7fc; --text2:#ffffff;
+  --accent:#3e88e9; --nur:#3b82f6; --jak:#f0a500; --mu:#ef4444; --green:#22c55e;
+  --radius:12px;
+  --gut:max(16px, env(safe-area-inset-left,0px));
+  --gut-r:max(16px, env(safe-area-inset-right,0px));
+  color-scheme:dark;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--text);overflow-x:hidden;font-size:16px;line-height:1.6;
+  font-family:'Noto Sans KR','Malgun Gothic','Apple SD Gothic Neo',system-ui,sans-serif;
+  padding-bottom:calc(40px + env(safe-area-inset-bottom,0px))}
+.mono{font-family:'JetBrains Mono',ui-monospace,monospace;font-variant-numeric:tabular-nums;letter-spacing:-.2px}
+/* 머리글과 단계줄은 한 덩어리로 맨 위에 붙어 있습니다.
+   공지가 길어도 지금 몇 번째인지 계속 보여야 합니다. */
+/* 머리줄과 단계줄은 바탕이 꽉 차 있어 흐림 효과가 필요 없습니다. 아이폰에서 글자가 번져 보여 뺐습니다 */
+.top{position:sticky;top:0;z-index:50;
+  box-shadow:0 8px 20px -14px rgba(0,0,0,.95)}
+.hdr{background:linear-gradient(135deg,#0c1a3d,#1b3470 55%,#0c1a3d);
+  padding-block:12px;padding-left:var(--gut);padding-right:var(--gut-r);display:flex;align-items:center;gap:10px}
+.hdr .brand{display:flex;align-items:center;gap:10px;min-width:0}
+.hdr .logo{width:38px;height:38px;border-radius:10px;flex:none;display:block;overflow:hidden;
+  box-shadow:0 0 0 1px rgba(255,255,255,.12),0 2px 10px rgba(12,26,61,.6)}
+.hdr .logo img{display:block;width:100%;height:100%}
+.hdr .bt{min-width:0}
+.hdr h1{font-size:17px;font-weight:700;letter-spacing:-.3px;line-height:1.2;color:#fff;-webkit-font-smoothing:antialiased}
+.hdr .co{font-size:11px;color:#ffffff;font-weight:600;letter-spacing:.4px;margin-top:1px;
+  white-space:nowrap}
+.hdr .co .ver{color:#ffffff;font-weight:400;font-size:9.5px;letter-spacing:.2px;
+  font-family:'JetBrains Mono',monospace;margin-left:4px}
+.hdr .who{margin-left:auto;font-size:12px;color:var(--text2);text-align:right;line-height:1.45;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:52%}
+.hdr .who b{color:var(--text);font-size:13px;display:block}
+/* 지금 어디까지 왔는지. 막대만 있으면 뜻을 모릅니다. */
+.steps{display:flex;padding-block:7px;padding-left:var(--gut);padding-right:var(--gut-r);
+  background:var(--surface);border-bottom:1px solid var(--border)}
+.stp{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;position:relative;min-width:0}
+.stp::before,.stp::after{content:'';position:absolute;top:7px;height:2px;background:var(--border);transition:background .35s}
+.stp::before{left:0;right:50%;margin-right:10px}
+.stp::after{left:50%;right:0;margin-left:10px}
+.stp:first-child::before,.stp:last-child::after{display:none}
+.sd{width:16px;height:16px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;
+  font-size:9px;font-weight:700;font-family:'JetBrains Mono',monospace;
+  background:var(--surface2);color:var(--text2);border:1px solid var(--border);
+  transition:background .25s,color .25s,border-color .25s}
+.sl{font-size:10px;line-height:1.3;color:var(--text2);white-space:nowrap;transition:color .25s}
+/* 단계 표시(1·2·3·4)는 첫 화면에서만 씁니다.
+   공지 확인부터는 그 자리를 비우고, 무사고 기록만 한 줄로 또렷하게 둡니다.
+   (이름이 겹치지 않게 큰 기록판의 막대는 .sfbar, 이 줄은 .sfline 입니다) */
+.steps.slim{align-items:center;padding-block:8px;
+  background:linear-gradient(180deg,#0f1f40,#0b1731);border-bottom:2px solid rgba(52,211,153,.45)}
+.steps.slim .stp{display:none}
+.sfline{display:none;flex:1;flex-direction:column;align-items:stretch;justify-content:center;
+  gap:6px;white-space:nowrap;font-weight:700;color:#d6ffe9;padding:4px 0}
+.steps.slim .sfline.on{display:flex}
+/* 한 줄을 꽉 채웁니다. 가운데로 모으면 양옆이 비어 작아 보입니다. */
+.sfline .r1{display:flex;align-items:baseline;justify-content:space-between;
+  gap:10px;width:100%;padding:0 4px}
+.sfline .r2{display:flex;justify-content:center}
+.sfline .t{color:#7df0d4;font-weight:900;letter-spacing:0;font-size:28px;flex:none}
+.sfline .d{font-weight:900;color:#fff;font-size:32px;letter-spacing:-.5px;flex:none;
+  font-family:'JetBrains Mono',ui-monospace,monospace;font-variant-numeric:tabular-nums;
+  text-shadow:0 0 18px rgba(52,211,153,.75)}
+.sfline .fr{color:#fff;font-weight:800;font-size:20px;flex:none}
+.sfline .dd{font-weight:900;color:#06281a;font-size:17px;letter-spacing:.6px;
+  background:linear-gradient(135deg,#86efac,#34d399);border-radius:999px;padding:5px 22px;
+  box-shadow:0 3px 16px -3px rgba(52,211,153,.9);
+  font-family:'JetBrains Mono',ui-monospace,monospace}
+@media(max-width:379px){.sfline .d{font-size:27px}.sfline .t{font-size:23px}
+  .sfline .fr{font-size:17px}.sfline .dd{font-size:15.5px;padding:5px 18px}
+  .sfline .r1{gap:5px;padding:0 1px}}
+@media(max-width:339px){.sfline .d{font-size:24px}.sfline .t{font-size:20px}
+  .sfline .fr{font-size:15px}}
+.stp.cur .sd{background:var(--accent);border-color:var(--accent);color:#fff;
+  box-shadow:0 0 0 3px rgba(62,136,233,.25)}
+.stp.cur .sl{color:var(--text);font-weight:700}
+.stp.fin .sd{background:var(--green);border-color:var(--green);color:#06260f}
+.stp.fin .sl{color:#86efac}
+.stp.fin::before,.stp.fin::after{background:var(--green)}
+.stp.cur::before{background:var(--green)}
+@media(max-width:340px){.sl{font-size:9px}}
+.wrap{padding-block:16px;padding-left:var(--gut);padding-right:var(--gut-r);
+  max-width:720px;margin-inline:auto;display:flex;flex-direction:column;gap:13px}
+/* 카드 : 위쪽에 아주 얇은 빛을 넣어 평평해 보이지 않게 합니다. */
+.card{position:relative;background:linear-gradient(180deg,#161d2b,var(--surface));
+  border:1px solid var(--border);border-radius:16px;padding:19px 17px;
+  box-shadow:0 1px 0 rgba(255,255,255,.04) inset, 0 10px 30px -18px rgba(0,0,0,.9);
+  animation:rise .34s cubic-bezier(.22,.9,.3,1) both}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.card h2{font-size:11.5px;font-weight:700;color:var(--text2);letter-spacing:1.1px;
+  margin-bottom:13px;display:flex;align-items:center;gap:8px}
+.card h2 .dot{width:6px;height:6px;border-radius:50%;background:var(--accent);flex:none;
+  box-shadow:0 0 0 3px rgba(62,136,233,.18)}
+.card h2 .tag{margin-left:auto;font-weight:400;letter-spacing:0;color:var(--text2)}
+/* 버튼 : 누르고 싶게. 꺼져 있을 땐 확실히 꺼져 보이게. */
+.btn{width:100%;border:none;color:#fff;padding:17px;border-radius:12px;
+  font-size:17px;font-weight:700;cursor:pointer;font-family:inherit;letter-spacing:-.2px;
+  background:linear-gradient(135deg,#609ff2,#2c75d5);
+  box-shadow:0 8px 22px -10px rgba(62,136,233,.9), 0 1px 0 rgba(255,255,255,.18) inset;
+  transition:transform .12s, box-shadow .2s, filter .2s}
+.btn:hover:not(:disabled){filter:brightness(1.07)}
+.btn:active:not(:disabled){transform:translateY(1px);box-shadow:0 4px 12px -8px rgba(62,136,233,.9)}
+.btn:disabled{background:#232e45;color:#ffffff;cursor:default;box-shadow:none}
+.banner{border-radius:10px;padding:12px 14px;font-size:13px;line-height:1.6;display:flex;gap:9px;align-items:flex-start}
+/* 이어서 한다고 알리는 줄. 갑자기 중간부터 시작하면 당황하십니다. */
+.resume{display:flex;align-items:center;gap:9px;border-radius:11px;padding:11px 14px;
+  font-size:13px;line-height:1.6;word-break:keep-all;
+  background:rgba(62,136,233,.13);border:1px solid rgba(62,136,233,.4);color:#ffffff;
+  animation:rise .34s cubic-bezier(.22,.9,.3,1) both}
+.resume b{color:#fff;font-weight:800}
+.banner.warn{background:#2a1a00;border:1px solid #4a3000;color:#fcd34d}
+.banner.bad{background:#1a0808;border:1px solid #3a1010;color:#fca5a5}
+/* 무사고 기록판 : 이름 치기 전에 가장 먼저 보입니다. 숫자 하나가 주인공입니다. */
+.safe{padding:13px 16px 14px;overflow:hidden;
+  background:radial-gradient(120% 90% at 0% 0%,rgba(34,197,94,.16),transparent 60%),linear-gradient(180deg,#112142,#0d1a35);
+  border-color:rgba(52,211,153,.35)}
+.safe::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;
+  background:linear-gradient(180deg,#34d399,#16a34a)}
+.sfhead{display:flex;align-items:center;gap:8px;margin-bottom:2px}
+.sftag{font-size:19px;font-weight:900;letter-spacing:.4px;color:#7df0d4}
+.sfleft{margin-left:auto;font-size:15px;font-weight:800;color:#c8ffe8;
+  background:rgba(52,211,153,.16);border:1px solid rgba(52,211,153,.38);
+  border-radius:999px;padding:6px 14px;white-space:nowrap}
+.sfday{display:flex;align-items:baseline;gap:5px;margin:1px 0 9px}
+.sfday b{font-size:46px;font-weight:900;line-height:1.05;letter-spacing:-1.5px;
+  font-family:'JetBrains Mono',ui-monospace,monospace;font-variant-numeric:tabular-nums;
+  background:linear-gradient(135deg,#d1fae5,#34d399);-webkit-background-clip:text;
+  background-clip:text;color:transparent}
+.sfday span{font-size:21px;font-weight:800;color:#9df5cf}
+.sfbar{height:9px;border-radius:999px;background:rgba(255,255,255,.09);overflow:hidden}
+.sfbar i{display:block;height:100%;width:0;border-radius:999px;
+  background:linear-gradient(90deg,#16a34a,#34d399);
+  box-shadow:0 0 10px rgba(52,211,153,.5);transition:width .9s cubic-bezier(.22,.9,.3,1)}
+.sffoot{margin-top:10px;font-size:14px;color:#ffffff;font-weight:600;line-height:1.6;word-break:keep-all}
+.sffoot b{color:#ffffff;font-weight:700}
+/* 아주 좁은 폰에서는 기록판을 조금 줄입니다. 그래야 이름 칸이
+   화면 끝까지 밀리지 않고, 스크롤 없이 바로 칠 수 있습니다. */
+@media(max-width:340px){.sfday b{font-size:36px}.sftag{font-size:16.5px;letter-spacing:0}
+  .sfday span{font-size:18px}.sfday{margin:0 0 7px}
+  .sfleft{font-size:12.5px;padding:4px 10px}.sffoot{font-size:12.5px;margin-top:8px}
+  .safe{padding:11px 14px 12px}}
+.shut{text-align:center;padding:40px 18px}
+.shut .ic{font-size:46px;filter:drop-shadow(0 6px 16px rgba(240,165,0,.3))}
+.shut h3{font-size:24px;font-weight:800;margin:16px 0 8px;letter-spacing:-.4px}
+.shut .big{font-size:44px;font-weight:900;margin:14px 0 6px;letter-spacing:1px;
+  font-family:'JetBrains Mono',monospace;
+  background:linear-gradient(135deg,#fde68a,#f0a500);-webkit-background-clip:text;
+  background-clip:text;color:transparent}
+.shut p{font-size:14px;color:var(--text2);line-height:1.7}
+.ntitle{font-size:22px;font-weight:700;line-height:1.38;margin-bottom:5px;letter-spacing:-.4px;
+  word-break:keep-all}
+.ndate{font-size:16px;font-weight:700;color:#fff;margin-bottom:18px;padding-bottom:16px;
+  border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.ndate::before{content:'';width:18px;height:2px;border-radius:1px;
+  background:linear-gradient(90deg,var(--accent),transparent)}
+.nbody{font-size:17.5px;line-height:1.8;color:#fff}
+.nbody .sec{font-size:19px;font-weight:800;color:#ffffff;margin:22px 0 11px;padding-left:11px;
+  border-left:3px solid var(--nur);line-height:1.4}
+.nbody .sec:first-child{margin-top:0}
+.nbody .li{display:flex;gap:9px;padding:5px 0}
+.nbody .li .n{flex:none;color:var(--jak);font-weight:700}
+.nbody .cau{background:#1a0808;border-left:3px solid var(--mu);border-radius:0 6px 6px 0;padding:11px 13px;margin:11px 0;color:#ffb4b4;font-weight:700;font-size:16.5px}
+.nbody .case{display:flex;gap:10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 13px;margin:8px 0;font-size:16.5px;color:#fff}
+.nbody .case .d{flex:none;color:var(--jak);font-weight:700}
+.nbody .p{margin:7px 0}
+.nbody .gap{height:8px}
+.sentinel{height:1px}
+.gate{display:flex;align-items:center;gap:11px;background:var(--surface2);border:1px dashed #4b5870;
+  border-radius:12px;padding:15px 15px;font-size:16px;font-weight:700;color:#fff;transition:all .3s;
+  word-break:keep-all;line-height:1.55}
+.gate .tick{flex:none;width:21px;height:21px;border-radius:50%;background:var(--green);color:#06260f;
+  display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900}
+.gate.done{border-style:solid;border-color:#15803d;background:linear-gradient(135deg,#0e2e16,#0c2412);
+  color:#86efac;box-shadow:0 0 0 3px rgba(34,197,94,.1)}
+
+/* 매일 지킬 것 : 공지를 읽은 '직후' 에 둡니다. 맨 위에 두면 매일 똑같아 넘겨 버립니다. */
+.daily{background:linear-gradient(180deg,#161d2b,var(--surface));
+  border:1px solid var(--border);border-left:3px solid var(--accent);
+  border-radius:14px;padding:17px 17px 15px}
+.daily .dtitle{font-size:14.5px;font-weight:800;color:#ffffff;letter-spacing:.8px;margin-bottom:13px}
+.daily .dlist{list-style:none;counter-reset:d}
+.daily .dlist li{counter-increment:d;display:flex;gap:11px;align-items:flex-start;
+  padding:10px 10px;margin:0 -10px;border-radius:9px;font-size:16.5px;line-height:1.6;
+  color:#fff;word-break:keep-all;transition:background .2s}
+.daily .dlist li::before{content:counter(d);flex:none;width:24px;height:24px;border-radius:50%;
+  background:var(--surface2);color:#ffffff;font-size:13px;font-weight:800;margin-top:1px;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'JetBrains Mono',monospace}
+/* 이번 주에 특히 보실 줄. 문구는 그대로 두고 눈길만 옮깁니다. */
+.daily .dlist li.focus{background:rgba(62,136,233,.13);font-weight:700}
+.daily .dlist li.focus::before{background:var(--accent);color:#fff;
+  box-shadow:0 0 0 3px rgba(62,136,233,.22)}
+/* '오늘 꼭 기억' 표시. 매일 지킬 것과 중요 작업에 똑같이 붙습니다. */
+.wk{flex:none;font-size:12px;font-weight:800;color:#fff;letter-spacing:.2px;
+  background:var(--accent);border-radius:999px;padding:4px 11px;white-space:nowrap}
+.daily .dlist li .wk{margin-left:auto;align-self:center}
+.wchips span.on .wk{margin-left:8px}
+.daily .dcau{margin-top:12px;padding-top:11px;border-top:1px solid var(--border);
+  font-size:15.5px;font-weight:800;color:#ffb4b4;word-break:keep-all}
+
+/* 중요 6개 작업 : 오늘 쓸 것 하나를 또렷하게 */
+.wsec{margin-top:14px;padding-top:13px;border-top:1px solid var(--border)}
+.wtitle{font-size:14px;font-weight:800;color:#fff;letter-spacing:.3px;margin-bottom:11px}
+.wchips{display:flex;flex-wrap:wrap;gap:7px}
+.wchips span{font-size:15.5px;font-weight:700;color:#fff;
+  background:var(--surface2);border:1px solid #46506a;
+  border-radius:999px;padding:8px 15px;word-break:keep-all}
+.wchips span.on{background:rgba(62,136,233,.17);border-color:var(--accent);
+  color:#fff;font-weight:700;box-shadow:0 0 0 3px rgba(62,136,233,.13);
+  display:inline-flex;align-items:center;padding-right:5px}
+
+/* 숙지 확인 : 장갑 낀 손으로도 누르기 쉽게 넓게 */
+.ack{display:flex;gap:13px;align-items:flex-start;cursor:pointer;user-select:none;
+  background:linear-gradient(180deg,#161d2b,var(--surface));border:1px solid var(--border);
+  border-radius:14px;padding:16px 16px;transition:border-color .2s,box-shadow .2s,background .2s}
+.ack:hover{border-color:#44506a}
+.ack input{position:absolute;opacity:0;width:0;height:0}
+.ack .box{flex:none;width:24px;height:24px;border-radius:7px;margin-top:1px;
+  border:2px solid #4a5568;background:#0c1730;position:relative;
+  transition:background .18s,border-color .18s,box-shadow .18s}
+.ack .box::after{content:'';position:absolute;left:7px;top:2.5px;width:6px;height:12px;
+  border:solid #fff;border-width:0 2.5px 2.5px 0;transform:rotate(45deg) scale(.4);
+  opacity:0;transition:opacity .16s,transform .16s}
+.ack .tx{font-size:15.5px;line-height:1.62;color:#ffffff;word-break:keep-all}
+.ack .tx b{display:block;color:#fff;font-size:17px;font-weight:800;margin-bottom:4px}
+.ack input:checked ~ .box{background:var(--green);border-color:var(--green);
+  box-shadow:0 0 0 4px rgba(34,197,94,.16)}
+.ack input:checked ~ .box::after{opacity:1;transform:rotate(45deg) scale(1)}
+.ack:has(input:checked){border-color:rgba(52,211,153,.55);background:linear-gradient(180deg,rgba(34,197,94,.12),rgba(34,197,94,.04))}
+.ack:has(input:checked) .tx b{color:#bbf7d0}
+.ack input:focus-visible ~ .box{outline:2px solid var(--accent);outline-offset:2px}
+.spin{width:15px;height:15px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;flex:none;animation:sp .8s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+label{display:block;font-size:13px;font-weight:600;color:var(--text2);margin-bottom:7px}
+.field{margin-bottom:15px}
+select,input[type=text],textarea{width:100%;background:var(--surface2);border:1px solid var(--border);
+  color:var(--text);border-radius:10px;padding:13px 14px;font-size:17px;outline:none;font-family:inherit;transition:border-color .2s}
+select:focus,input:focus,textarea:focus{border-color:var(--accent)}
+textarea{resize:vertical;min-height:84px;line-height:1.75;font-size:18px;letter-spacing:.1px}
+textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(62,136,233,.18)}
+.hint{font-size:12px;color:var(--text2);margin-top:6px}
+.err{font-size:13px;color:#fca5a5;margin-top:8px;display:none}
+.err.on{display:block}
+.picks{display:flex;flex-wrap:wrap;gap:9px;margin-top:4px}
+/* 머리줄 : 제목과 몇 번째인지 */
+.dhead{display:flex;align-items:center;gap:10px;margin-bottom:11px}
+.dhead h2{margin:0;flex:1}
+.dcount{flex:none;font-size:14.5px;font-weight:800;color:#ffffff;background:rgba(62,136,233,.2);
+  border:1px solid rgba(62,136,233,.5);border-radius:999px;padding:5px 13px;letter-spacing:.3px}
+/* 셀 것이 없을 때 빈 알약만 남아 흠처럼 보입니다. 글자가 없으면 지웁니다. */
+.dcount:empty{display:none}
+
+/* 몇 줄 남았는지 한눈에. 막대 하나보다 칸이 또렷합니다. */
+.pips{display:flex;gap:5px;margin-bottom:14px}
+.pips i{flex:1;height:4px;border-radius:2px;background:#25365a;transition:background .3s,box-shadow .3s}
+.pips i.fin{background:linear-gradient(90deg,#22c55e,#16a34a)}
+.pips i.cur{background:linear-gradient(90deg,#8ebbf7,var(--accent));
+  box-shadow:0 0 10px rgba(62,136,233,.75)}
+
+/* 지나온 줄 : 조용히 쌓이게 */
+.donelist{display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
+.donelist:not(:empty){padding-left:11px;border-left:2px solid rgba(52,211,153,.3)}
+.donelist div{font-size:12.5px;color:#ffffff;display:flex;gap:8px;align-items:flex-start;line-height:1.5}
+.donelist .tick{color:var(--green);flex:none;font-weight:700;font-size:11px;margin-top:2px}
+
+/* 브라우저가 입력칸을 화면에 맞추려 끌어올릴 때, 고정 머리줄 높이만큼 비워 둡니다.
+   이게 없으면 삼성 브라우저에서 받아쓸 문장이 머리줄 뒤로 숨습니다. */
+html{scroll-padding-top:124px}
+.sentwrap,.inwrap,#step-dict{scroll-margin-top:124px}
+/* 자판이 올라오면 화면이 절반으로 줄어듭니다. 그때는 군더더기를 걷어내고
+   보고 칠 문장과 치는 칸만 남깁니다. 문장이 안 보이면 받아쓰기를 못 합니다. */
+body.kb .top{display:none}
+body.kb .dhead,body.kb .donelist,body.kb .spacetip{display:none}
+body.kb .pips{margin-bottom:10px}
+body.kb .card{padding-top:14px}
+body.kb .sent{font-size:20px;line-height:1.74;padding:16px 15px 14px}
+body.kb .inwrap textarea{min-height:86px}
+body.kb .dnext{margin-top:10px}
+/* 카톡 안쪽 브라우저는 위아래 띠가 많아 자판까지 오르면 더 좁습니다.
+   그때는 글자와 칸을 한 번 더 줄여서 문장과 치는 칸을 다 담습니다. */
+body.kb.tight .sent{font-size:18px;line-height:1.62;padding:12px 13px 11px}
+body.kb.tight .inwrap textarea{min-height:56px;font-size:17px;padding:12px 14px 10px}
+body.kb.tight .dstat{display:none}
+body.kb.tight .pips{display:none}
+body.kb.tight .dnext{margin-top:8px;padding:11px;font-size:15px}
+body.kb.tight .card{padding-top:10px}
+
+/* 받아쓸 문장 : 이 화면의 주인공 */
+.sentwrap{position:relative;margin-bottom:9px}
+.dict .lab{position:absolute;top:-9px;left:14px;z-index:2;display:inline-block;
+  font-size:10.5px;font-weight:700;padding:3px 10px;border-radius:999px;letter-spacing:.4px;
+  box-shadow:0 2px 8px rgba(0,0,0,.5)}
+.dict .lab.a{background:linear-gradient(135deg,#2c4e7d,#1e2f47);color:#ffffff;border:1px solid #477bc1}
+.dict .lab.b{background:linear-gradient(135deg,#5c4100,#3d2a00);color:#ffd77a;border:1px solid #8a6200}
+/* 밝은 데서도 읽혀야 합니다. 바탕을 더 어둡게, 글자를 더 밝고 굵게 둡니다. */
+.sent{position:relative;overflow:hidden;
+  background:radial-gradient(circle at -6% -24%,rgba(62,136,233,.14),transparent 48%),
+             linear-gradient(145deg,#152240,#0e1830 55%,#13203a);
+  border:1px solid #3a4870;border-radius:16px;padding:24px 18px 22px;
+  font-size:23px;font-weight:800;line-height:1.9;letter-spacing:.3px;color:#ffffff;
+  box-shadow:0 1px 0 rgba(255,255,255,.07) inset, 0 14px 34px -22px rgba(62,136,233,.9);
+  user-select:none;-webkit-user-select:none;white-space:pre-wrap;word-break:break-word}
+/* 문장 상자와 입력칸을 잇는 작은 꼭지 */
+.sentnotch{position:absolute;left:50%;bottom:-7px;width:13px;height:13px;margin-left:-6.5px;
+  background:#13203a;border-right:1px solid #3a4870;border-bottom:1px solid #3a4870;
+  transform:rotate(45deg);border-radius:0 0 3px 0}
+/* 타자연습처럼. 아직 안 친 글자도 또렷하게 읽히고, 치면 하얗게 켜지고, 틀리면 빨개집니다.
+   예전에는 안 친 글자가 너무 어두워 밝은 데서 안 보였습니다. */
+.sent .g{color:#ffffff;transition:color .1s,text-shadow .1s}
+.sent .g.hit{color:#fff;text-shadow:0 0 16px rgba(183,212,251,.8)}
+.sent .g.bad{color:#fff;background:rgba(220,38,38,.92);border-radius:4px;
+  box-shadow:0 0 0 1px rgba(248,113,113,.6)}
+/* 띄어쓰기는 옅은 칸으로 보여 줍니다. 점으로 그리면 마침표와 헷갈립니다. */
+.sent .g.sp{background:none;box-shadow:inset 0 -3px 0 rgba(148,163,184,.34)}
+.sent .g.sp.hit{box-shadow:inset 0 -3px 0 rgba(142,187,247,.95)}
+.sent .g.sp.bad{background:#b91c1c;box-shadow:none;border-radius:3px}
+/* 좁은 화면에서는 한 줄에 글자가 적어지니 조금만 줄입니다. */
+@media(max-width:340px){.sent{font-size:21px;line-height:1.86;padding:22px 15px 20px}}
+.sent .cur{border-left:2.5px solid #8ebbf7;margin-left:-2.5px;
+  box-shadow:-1px 0 10px rgba(142,187,247,.85);animation:blink 1.05s step-end infinite}
+@keyframes blink{50%{border-color:transparent;box-shadow:none}}
+.sent .extra{color:#fff;background:rgba(220,38,38,.85);border-radius:4px;text-decoration:line-through}
+/* ───── 확인 서약 ─────
+   바꾸시기 전까지 날마다 똑같이 나갑니다.
+   ① 체크시트를 눌러서 보고  ② 동의하고  ③ 손으로 서명합니다.
+   셋을 다 하셔야 버튼이 열립니다. */
+
+/* 어디까지 했는지 — 셋이 하나씩 초록으로 켜집니다 */
+.gq{margin-bottom:14px}
+.gq .t{font-size:19px;font-weight:800;line-height:1.4;letter-spacing:-.4px;
+  word-break:keep-all;color:var(--text)}
+.gq .s{margin-top:6px;font-size:15.5px;color:#ffffff;font-weight:800;letter-spacing:.2px}
+.gq .r{display:inline-block;margin-top:10px;font-size:13.5px;font-weight:800;letter-spacing:.5px;
+  padding:5px 13px;border-radius:999px;background:rgba(240,165,0,.15);color:#ffd96b;
+  border:1px solid rgba(240,165,0,.4)}
+
+.btn.gnext{display:flex;flex-direction:column;align-items:center;gap:3px;padding:16px 19px}
+.btn.gnext .t1{font-size:17px;font-weight:800;letter-spacing:-.3px}
+.btn.gnext .t2{font-size:12.5px;font-weight:600}
+.btn.gnext:disabled .t1,.btn.gnext:disabled .t2{opacity:1}
+
+/* 지켜야 할 것 */
+.ghd{font-size:14.5px;font-weight:800;letter-spacing:.6px;color:#fff;
+  margin:0 2px 9px}
+.gbody{border:1px solid var(--border);border-radius:13px;overflow:hidden;
+  background:var(--surface2);margin-bottom:18px}
+.gbody .b{display:flex;gap:10px;padding:14px 15px;font-size:16.5px;line-height:1.66;
+  color:#fff;word-break:keep-all}
+.gbody .b+.b{border-top:1px solid var(--border)}
+.gbody .b i{font-style:normal;color:#ffffff;font-weight:900;flex:none;font-size:15px;margin-top:1px}
+.gbody .b em{font-style:normal;color:#ffb4b4;font-weight:900}
+
+/* 동의 */
+.gagree{border:1px solid var(--border);border-radius:13px;overflow:hidden;margin-bottom:18px}
+.gsub{font-size:14px;color:#ffffff;margin:-4px 2px 10px;line-height:1.6;word-break:keep-all}
+.gsub b{color:#fff;font-weight:800}
+/* 동의 한 줄 : 글을 먼저 읽고, 체크칸은 글 끝에 둡니다. */
+.gi{display:flex;align-items:center;gap:13px;padding:15px 15px;cursor:pointer;
+  font-size:16.5px;line-height:1.6;color:#fff;font-weight:600;word-break:keep-all;
+  transition:background .2s;user-select:none;-webkit-user-select:none}
+.gi .gtx{flex:1;min-width:0}
+.gi+.gi{border-top:1px solid var(--border)}
+.gi.on{background:rgba(62,136,233,.1)}
+.gagree input[type=checkbox]{width:30px;height:30px;flex:none;accent-color:var(--accent);
+  margin:0;cursor:pointer}
+
+/* 서명 */
+.gvow{border:1px solid var(--border);border-radius:13px;padding:15px 15px 13px;
+  background:var(--surface2);margin-bottom:16px;transition:border-color .25s}
+.vrow{display:flex;flex-wrap:wrap;align-items:center;gap:9px;line-height:2}
+.vrow input{width:auto;flex:0 1 auto;min-width:0;font-size:19px;font-weight:800;color:#fff;
+  padding:12px 14px;border-radius:10px;text-align:center;background:var(--bg)}
+#v-name{width:132px}
+.vrow input::placeholder{color:#ffffff;font-weight:700;font-size:16px}
+/* 체크시트를 열어야 넘어간다는 것을 모르시는 분이 계셨습니다. 눈에 띄게 적어 둡니다. */
+/* 뒤로 가기를 누르셨을 때 알려 드리는 띠 */
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));
+  transform:translateX(-50%) translateY(12px);z-index:120;width:max-content;max-width:86%;
+  padding:13px 17px;border-radius:13px;background:#1b2334;border:1px solid #364568;
+  color:#ffffff;font-size:13.5px;font-weight:700;text-align:center;line-height:1.55;
+  box-shadow:0 12px 34px rgba(0,0,0,.55);opacity:0;pointer-events:none;
+  transition:opacity .2s ease,transform .2s ease;word-break:keep-all}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.warn{background:#3d2610;border-color:#8a5c14;color:#fde68a}
+.vrow .vt{font-size:16.5px;color:#fff;font-weight:700;word-break:keep-all;line-height:1.7}
+.vrow .vt b{color:#ffffff;font-weight:800}
+.vhint{margin-top:12px;font-size:14px;color:#ffffff;line-height:1.7;word-break:keep-all}
+.vhint b{color:#ffffff;font-weight:800}
+.gvow.ok{border-color:rgba(34,197,94,.5);background:rgba(34,197,94,.05)}
+.gvow.ok .vrow input{border-color:rgba(34,197,94,.42)}
+
+@media(max-width:340px){.gq .t{font-size:17px}.vrow .vt{font-size:15px}
+  .gi{font-size:15.5px;padding:13px}}
+.tnclead{font-size:14px;color:var(--text2);margin:0 0 16px;line-height:1.65;word-break:keep-all}
+.tnclead b{color:#ffffff;font-weight:700}
+.tncbox{position:relative;overflow:hidden;text-align:center;margin-bottom:16px;
+  background:linear-gradient(160deg,#16294a,#102038 55%,#13243f);
+  border:1px solid #2d5086;border-radius:18px;padding:34px 18px 30px;
+  box-shadow:0 1px 0 rgba(255,255,255,.07) inset, 0 16px 40px -24px rgba(29,78,216,.95)}
+/* 손 뒤로 퍼지는 파장 */
+.tncring{position:absolute;left:50%;top:60px;width:92px;height:92px;margin:-46px 0 0 -46px;
+  border-radius:50%;border:1.5px solid rgba(147,197,253,.5);animation:ring 2.6s ease-out infinite}
+.tncring:nth-of-type(2){animation-delay:.87s}
+.tncring:nth-of-type(3){animation-delay:1.74s}
+@keyframes ring{0%{transform:scale(.55);opacity:.8}100%{transform:scale(2.1);opacity:0}}
+.tnchand{position:relative;font-size:52px;line-height:1;margin-bottom:16px;
+  animation:wave 1.7s ease-in-out infinite;filter:drop-shadow(0 6px 16px rgba(59,130,246,.55))}
+@keyframes wave{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(10deg)}}
+.tnccall{position:relative;font-size:23px;font-weight:800;color:#ffffff;line-height:1.6;
+  word-break:keep-all;letter-spacing:-.3px;text-shadow:0 0 26px rgba(147,197,253,.4)}
+.tncwho{font-size:13px;color:var(--text2);text-align:center;margin-bottom:16px}
+.tncwho b{color:var(--text);font-weight:700}
+/* 아직 안 끝났다는 알림. 노랑은 '보세요' 지 '잘못했다' 가 아닙니다. */
+.lastcall{display:flex;flex-direction:column;gap:3px;text-align:center;
+  background:rgba(240,165,0,.09);border:1px solid rgba(240,165,0,.34);
+  border-radius:12px;padding:13px 14px;margin-bottom:14px;word-break:keep-all}
+.lastcall b{font-size:17px;font-weight:800;color:#ffd96b}
+.lastcall span{font-size:15px;color:#fff;font-weight:600;line-height:1.6}
+/* 여기를 누르시라는 손짓 */
+.pointer{text-align:center;font-size:24px;line-height:1;margin-bottom:2px;
+  animation:nudge 1.3s ease-in-out infinite}
+@keyframes nudge{0%,100%{transform:translateY(-3px);opacity:.55}50%{transform:translateY(3px);opacity:1}}
+.btn.tncbtn{display:flex;flex-direction:column;align-items:center;gap:3px;padding:16px 19px;
+  background:linear-gradient(135deg,#3b82f6,#1d4ed8);
+  box-shadow:0 10px 26px -10px rgba(37,99,235,.95), 0 1px 0 rgba(255,255,255,.2) inset;
+  animation:breathe 2.1s ease-in-out infinite}
+@keyframes breathe{0%,100%{box-shadow:0 10px 26px -10px rgba(37,99,235,.95), 0 1px 0 rgba(255,255,255,.2) inset, 0 0 0 0 rgba(59,130,246,.42)}
+  60%{box-shadow:0 10px 26px -10px rgba(37,99,235,.95), 0 1px 0 rgba(255,255,255,.2) inset, 0 0 0 11px rgba(59,130,246,0)}}
+.btn.tncbtn .t1{font-size:19px;font-weight:800;letter-spacing:-.3px}
+.btn.tncbtn .t2{font-size:12.5px;font-weight:600;letter-spacing:.2px}
+.btn.tncbtn:disabled{animation:none;background:var(--surface2);box-shadow:none}
+.spacetip{font-size:12.5px;color:#ffffff;margin:14px 0 10px;text-align:center;
+  word-break:keep-all;line-height:1.6}
+.spacetip b{color:#ffffff;font-weight:700}
+
+/* 입력칸 : 문장 상자와 한 짝으로 보이게 */
+.inwrap{position:relative;border-radius:14px;overflow:hidden;
+  border:1px solid #2a3c63;background:#0c1730;transition:border-color .2s,box-shadow .2s}
+.inwrap:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px rgba(62,136,233,.17)}
+.inwrap textarea{border:none;background:transparent;border-radius:0;padding:16px 16px 14px;
+  font-size:20px;font-weight:600;line-height:1.8;color:#fff}
+.inwrap textarea:focus{box-shadow:none;border:none}
+/* 글자를 하얗게 바꿨으니, 안내 글자는 따로 눌러 둡니다. */
+.inwrap textarea::placeholder{color:#ffffff;font-weight:400;font-size:17px}
+.meter{height:3px;background:#1a2233}
+.meter .bar{height:100%;overflow:hidden}
+.meter .fill{height:100%;width:0;transition:width .18s,background .25s}
+
+.dstat{font-size:12.5px;color:var(--text2);margin:10px 0 15px;display:flex;
+  justify-content:space-between;align-items:center;gap:10px;min-height:20px}
+.dnums{flex:none;display:flex;align-items:center;gap:9px}
+.dnums .pct{font-size:13px;font-weight:700;color:#ffffff;transition:color .25s}
+.dnums .mono{font-size:11.5px;color:#ffffff}
+.btn.dnext::after{content:' →';font-weight:400;opacity:.8}
+.done{text-align:center;padding:32px 18px 24px}
+/* 초록 고리 안에 체크 */
+.done .ic svg{width:44px;height:44px;overflow:visible}
+.done .ic svg path{stroke-dasharray:52;stroke-dashoffset:52;
+  animation:draw .5s .22s cubic-bezier(.4,0,.2,1) forwards;
+  filter:drop-shadow(0 0 10px rgba(74,222,128,.65))}
+@keyframes draw{to{stroke-dashoffset:0}}
+.done .ic{position:relative;display:inline-flex;align-items:center;justify-content:center;
+  width:84px;height:84px;border-radius:50%;line-height:1;
+  background:radial-gradient(circle at 50% 35%,#15502a,#0c2a16);
+  border:1.5px solid #1f7a3d;margin-bottom:6px;
+  box-shadow:0 0 0 8px rgba(34,197,94,.08), 0 14px 36px -18px rgba(34,197,94,.9);
+  animation:pop .5s cubic-bezier(.2,1.5,.4,1) both}
+@keyframes pop{from{transform:scale(.4);opacity:0}to{transform:scale(1);opacity:1}}
+.done h3{font-size:25px;font-weight:800;margin:14px 0 7px;letter-spacing:-.5px}
+.done .sub{font-size:14px;color:var(--text2);margin-bottom:22px;line-height:1.6}
+.recap{background:#0c1730;border:1px solid #25365a;border-radius:14px;
+  padding:6px 16px;text-align:left;font-size:15px;
+  box-shadow:0 1px 0 rgba(255,255,255,.04) inset}
+.recap>div{display:flex;align-items:baseline;justify-content:space-between;gap:14px;
+  padding:12px 0;border-bottom:1px solid #1c2436}
+.recap>div:last-child{border-bottom:none}
+.recap .k{color:#ffffff;font-size:14.5px;font-weight:600;flex:none;letter-spacing:.2px}
+.recap .v{font-weight:800;font-size:17px;color:#fff;text-align:right;word-break:keep-all}
+/* 이번 달 달력 — 확인하신 날에 색이 들어갑니다.
+   '10월 중 4일' 같은 글보다 달력 한 장이 훨씬 빨리 읽힙니다. */
+.cal{margin-top:14px;background:#0c1730;border:1px solid #25365a;border-radius:14px;
+  padding:15px 13px 13px}
+.calhd{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:12px}
+.calhd b{font-size:16.5px;font-weight:800;color:var(--text);flex:none}
+.calhd span{font-size:12.5px;font-weight:700;color:#ffffff;text-align:right;word-break:keep-all}
+.caldow,.calgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.caldow i{font-style:normal;text-align:center;font-size:10.5px;font-weight:800;
+  color:#ffffff;padding-bottom:6px}
+.caldow i:first-child{color:#ff9b9b}
+.caldow i:last-child{color:#9cc2ff}
+.cd{height:34px;display:flex;align-items:center;justify-content:center;border-radius:9px;
+  font-family:'JetBrains Mono',monospace;font-size:12.5px;font-weight:700;
+  color:#ffffff;background:#16233f}
+.cd.pad{background:none}
+.cd.soon{color:#ffffff;background:#0f1830}
+.cd.on{color:#06301a;background:#4ade80;font-weight:800}
+/* 오늘은 아예 파란 칸으로. 초록 위에 테두리만 두르면 초록 사이에 묻힙니다. */
+.cd.now{box-shadow:inset 0 0 0 2px #60a5fa}
+.cd.on.now{background:#2f7df6;color:#fff;font-weight:800;box-shadow:none}
+.callg{display:flex;gap:16px;justify-content:center;margin-top:13px;
+  font-size:13.5px;color:#ffffff;font-weight:700}
+.callg span{display:flex;align-items:center;gap:5px}
+.callg .sw{width:11px;height:11px;border-radius:4px;display:inline-block}
+.callg .sw.on{background:#4ade80}
+.callg .sw.now{background:#2f7df6}
+.foot{text-align:center;font-size:12px;color:var(--text2);padding:2px 0 8px;line-height:1.7}
+.bye{margin-top:22px;padding-top:18px;text-align:center;position:relative;
+  font-size:13px;color:var(--text2);line-height:1.9}
+.bye::before{content:'';position:absolute;top:0;left:50%;width:48px;height:1px;margin-left:-24px;
+  background:linear-gradient(90deg,transparent,var(--border),transparent)}
+.bye b{color:#ffffff;font-weight:700;letter-spacing:.8px;font-size:11.5px;
+  display:inline-block;margin-top:3px}
+/* 첫 화면 : 지금 몇 시인지, 언제까지 할 수 있는지 */
+.when{position:relative;overflow:hidden;display:flex;align-items:stretch;gap:16px;
+  background:radial-gradient(circle at 108% -30%,rgba(34,197,94,.14),transparent 46%),
+             linear-gradient(135deg,#171e2e,#111829 60%,#121a2b);
+  border:1px solid #26314b;border-radius:14px;padding:15px 16px;margin-bottom:17px;
+  box-shadow:0 1px 0 rgba(255,255,255,.05) inset}
+.when::before{content:'';position:absolute;inset:0 auto 0 0;width:3px;
+  background:linear-gradient(180deg,var(--green),#15803d)}
+.when .clk{position:relative;flex:none;display:flex;flex-direction:column;justify-content:center;
+  padding-right:16px;border-right:1px solid rgba(255,255,255,.07)}
+.when .clk .cv{font-family:'JetBrains Mono',monospace;font-size:28px;font-weight:700;
+  color:#fff;letter-spacing:.5px;line-height:1.05;font-variant-numeric:tabular-nums;
+  text-shadow:0 0 22px rgba(134,239,172,.3)}
+.when .clk .cl{font-size:10px;color:var(--text2);margin-top:5px;letter-spacing:.6px;
+  display:flex;align-items:center;gap:5px}
+.when .clk .cl::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--green);
+  animation:tick 2s ease-in-out infinite}
+@keyframes tick{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(34,197,94,.55)}
+  70%{opacity:.55;box-shadow:0 0 0 6px rgba(34,197,94,0)}}
+.when .tx{position:relative;flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center}
+.when .t1{font-size:15.5px;font-weight:700;letter-spacing:-.2px;word-break:keep-all;line-height:1.45}
+.when .t1 b{font-family:'JetBrains Mono',monospace;color:#86efac;font-weight:700}
+.when .t2{font-size:12px;color:var(--text2);margin-top:5px;line-height:1.55;word-break:keep-all}
+@media(max-width:400px){.when{gap:12px;padding:13px}.when .clk{padding-right:12px}
+  .when .clk .cv{font-size:23px}.when .t1{font-size:14px}}
+
+/* 이름 고르기 : 누를 것이 분명하게 보이도록 */
+.picks button{position:relative;background:linear-gradient(180deg,#1d2537,#171d2c);
+  border:1px solid #2c3955;color:var(--text);border-radius:12px;padding:15px 18px;
+  font-size:18px;font-weight:700;cursor:pointer;font-family:inherit;flex:1;min-width:140px;
+  text-align:left;transition:border-color .18s,transform .12s,box-shadow .18s}
+.picks button:hover{border-color:var(--accent);box-shadow:0 0 0 3px rgba(62,136,233,.14)}
+.picks button:active{transform:translateY(1px)}
+.picks .sub{display:block;font-size:12px;font-weight:400;color:var(--text2);margin-top:4px}
+
+/* 생년월일 여섯 자리 : 또박또박 */
+#q-code{font-size:28px;letter-spacing:11px;text-indent:11px;text-align:center;font-weight:700;
+  font-family:'JetBrains Mono',monospace;padding-block:16px;
+  background:#0c1730;border-color:#2a3c63}
+#q-code:focus{box-shadow:0 0 0 3px rgba(62,136,233,.2)}
+#q-code::placeholder{letter-spacing:2px;text-indent:0;font-size:16px;font-family:'Noto Sans KR',sans-serif}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+/* ── 이름 기억 ── */
+.notme{display:none;margin-top:10px;background:none;border:0;padding:6px 0;color:#ffffff;
+  font:inherit;font-size:16px;font-weight:600;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+/* ── 알림 · 축하 카드 : 화면 가운데, 몇 초 뒤 저절로 닫힘 ──
+   빨강 미제출 · 주황 장기 미확인 · 초록 매달 축하 · 파랑 목표 임박 · 금색 목표 달성 */
+.al{position:fixed;inset:0;z-index:900;display:none;align-items:center;justify-content:center;padding:22px;
+  background:rgba(3,7,18,.72);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.al.on{display:flex;animation:alIn .2s ease-out}
+.al.off{animation:alOut .3s ease-in forwards}
+.alc{position:relative;width:100%;max-width:346px;border-radius:26px;overflow:hidden;cursor:pointer;
+  background:linear-gradient(180deg,rgba(28,44,86,.97),rgba(12,22,48,.98));
+  box-shadow:0 0 0 1px rgba(255,255,255,.1) inset,0 30px 80px rgba(0,0,0,.65),0 0 60px color-mix(in srgb,var(--a1) 32%,transparent);
+  animation:alPop .5s cubic-bezier(.2,1.35,.4,1)}
+.alc.miss,.alc.gap{animation:alPop .5s cubic-bezier(.2,1.35,.4,1),alShake .5s ease-in-out .5s}
+.alc:before{content:'';position:absolute;left:0;right:0;top:0;height:150px;
+  background:radial-gradient(90% 100% at 50% 0,color-mix(in srgb,var(--a1) 45%,transparent),transparent 75%)}
+.alc>*{position:relative}
+.alc .top{display:flex;flex-direction:column;align-items:center;text-align:center;padding:26px 18px 6px}
+.alc .ic{position:relative;width:66px;height:66px;border-radius:20px;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(145deg,var(--a1),var(--a2));box-shadow:0 10px 26px color-mix(in srgb,var(--a1) 55%,transparent),inset 0 1px 0 rgba(255,255,255,.4);
+  animation:alIcon .6s cubic-bezier(.2,1.6,.4,1) .15s both}
+.alc .ic svg{width:36px;height:36px}
+.alc .ic:before,.alc .ic:after{content:'';position:absolute;inset:-9px;border-radius:26px;border:1.5px solid color-mix(in srgb,var(--a1) 55%,transparent);animation:alRing 1.8s ease-out .5s infinite}
+.alc .ic:after{inset:-18px;border-radius:32px;opacity:.45;animation-delay:.8s}
+.alc .tag{margin-top:18px;display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:800;letter-spacing:1.5px;color:var(--a3);
+  padding:5px 11px;border-radius:999px;background:color-mix(in srgb,var(--a1) 16%,transparent);border:1px solid color-mix(in srgb,var(--a1) 40%,transparent);white-space:nowrap}
+.alc .tag i{width:6px;height:6px;border-radius:50%;background:var(--a1);box-shadow:0 0 8px var(--a1)}
+.alc .h{margin-top:10px;font-size:28px;font-weight:900;color:#fff;letter-spacing:-.8px;white-space:nowrap}
+.alc .h em,.alc .big{font-style:normal;background:linear-gradient(180deg,#fff 20%,var(--a3));-webkit-background-clip:text;background-clip:text;color:transparent}
+.alc .big{margin-top:6px;font-size:64px;font-weight:900;line-height:1;letter-spacing:-2px;white-space:nowrap;
+  filter:drop-shadow(0 4px 18px color-mix(in srgb,var(--a1) 50%,transparent));animation:alBig .7s cubic-bezier(.2,1.5,.4,1) .25s both}
+.alc .big small{font-size:26px;letter-spacing:-.5px}
+.alc .sub{margin-top:8px;font-size:15px;font-weight:700;color:#ffffff;white-space:nowrap}
+.alc .sub b{color:#fff}
+.alc .rows{padding:14px 18px 0;display:flex;flex-direction:column;gap:8px}
+.alc .r{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;border-radius:14px;
+  background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.07);white-space:nowrap}
+.alc .r b{font-size:16px;font-weight:800;color:#fff}.alc .r span{font-size:14px;font-weight:800;color:var(--a3)}
+.alc .r b.d{display:inline-flex;align-items:center;gap:8px}.alc .r b.d:before{content:'';width:7px;height:7px;border-radius:50%;background:var(--a1)}
+.alc .act{margin:14px 18px 0;padding:13px 0;border-radius:14px;text-align:center;font-size:16.5px;font-weight:900;color:#fff;white-space:nowrap;
+  background:linear-gradient(90deg,color-mix(in srgb,var(--a1) 85%,#000),var(--a2));box-shadow:0 8px 20px color-mix(in srgb,var(--a1) 35%,transparent)}
+.alc .gapb{height:6px}
+.alc .ft{margin-top:14px;height:3px;background:rgba(255,255,255,.08)}
+.alc .ft i{display:block;height:100%;background:linear-gradient(90deg,var(--a1),var(--a3));transform-origin:left}
+.alc .hint{padding:8px 0 10px;text-align:center;font-size:11.5px;color:#ffffff;white-space:nowrap}
+.alc .sp{position:absolute;width:6px;height:6px;border-radius:50%;background:var(--a3);box-shadow:0 0 10px var(--a3);animation:alTw 1.6s ease-in-out infinite}
+.alc .sp.s{width:3px;height:3px}
+.alc .cf{position:absolute;width:7px;height:12px;border-radius:2px;animation:alFall 2.6s linear infinite}
+@keyframes alIn{from{opacity:0}to{opacity:1}}@keyframes alOut{to{opacity:0}}
+@keyframes alPop{from{transform:translateY(24px) scale(.88);opacity:0}to{transform:none;opacity:1}}
+@keyframes alShake{0%,100%{transform:none}20%{transform:translateX(-8px)}40%{transform:translateX(7px)}60%{transform:translateX(-5px)}80%{transform:translateX(3px)}}
+@keyframes alIcon{from{transform:scale(.3) rotate(-20deg);opacity:0}to{transform:none;opacity:1}}
+@keyframes alRing{0%{transform:scale(.85);opacity:.9}100%{transform:scale(1.25);opacity:0}}
+@keyframes alBig{from{transform:scale(1.6);opacity:0}to{transform:none;opacity:1}}
+@keyframes alTw{50%{opacity:.25;transform:scale(.6)}}
+@keyframes alFall{from{transform:translateY(-20px) rotate(0)}to{transform:translateY(420px) rotate(400deg)}}
+@media(max-width:350px){.al{padding:12px}.alc .top{padding:20px 12px 4px}.alc .h{font-size:23px}.alc .big{font-size:52px}
+  .alc .rows{padding:12px 12px 0}.alc .r{padding:10px}.alc .r b{font-size:14px}.alc .r span{font-size:12.5px}.alc .act{margin:12px 12px 0;font-size:15px}.alc .sub{font-size:13.5px}}
+/* ── 동의는 위에서부터 차례로 ── */
+.gi.lock{opacity:.38;cursor:not-allowed}
+.gi.lock .gck{pointer-events:none}
+.gi.next{box-shadow:inset 3px 0 0 var(--accent)}
+/* ── 서약란 : 이름 + 「서약」 ── */
+#v-word{width:76px;padding:7px 8px!important;font-size:18px!important}
+.vrow .vw{display:inline-flex;align-items:center;gap:7px;white-space:nowrap}
+.vrow .vw b.vt{color:#ffffff;font-weight:800}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+/* 아이폰 : 맨 위 흐림 자리에 빈 남색 띠 (머리줄은 그 아래에 붙습니다) */
+html.ios body{padding-top:30px}
+html.ios .top{top:30px}
+html.ios body::before{content:'';position:fixed;left:0;right:0;top:0;height:30px;background:#0c1a3d;z-index:51}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <div class="hdr">
+    <div class="brand">
+      <div class="logo"><img alt="OSF" src="data:image/png;base64,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"></div>
+      <div class="bt"><h1>일일 안전확인</h1><p class="co">OSF Solution <span class="ver">2026-10-29 e</span></p></div>
+    </div>
+    <div class="who" id="who"></div>
+  </div>
+  <div class="steps" id="steps">
+    <div class="stp" id="s1"><span class="sd">1</span><span class="sl">본인 확인</span></div>
+    <div class="stp" id="s2"><span class="sd">2</span><span class="sl">공지 확인</span></div>
+    <div class="stp" id="s3"><span class="sd">3</span><span class="sl">받아쓰기</span></div>
+    <div class="stp" id="s4"><span class="sd">4</span><span class="sl">확인 서약</span></div>
+    <div class="sfline" id="sfline">
+      <div class="r1"><span class="t">양품확보</span><span class="d" id="sb-day"></span>
+        <span class="fr" id="sb-from"></span></div>
+      <div class="r2"><span class="dd" id="sb-dd"></span></div>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div id="loading" class="card"><div class="gate"><span class="spin"></span><span>오늘 공지를 불러오는 중입니다</span></div></div>
+  <div id="loaderr" class="banner bad" style="display:none"><span>⚠️</span><span id="loaderr-m"></span></div>
+  <div id="resume" class="resume" style="display:none"></div>
+
+  <div id="safe" class="card safe" style="display:none">
+    <div class="sfhead">
+      <span class="sftag">양품확보</span>
+      <span class="sfleft" id="sf-left"></span>
+    </div>
+    <div class="sfday"><b id="sf-day">0</b><span>일차</span></div>
+    <div class="sfbar"><i id="sf-fill"></i></div>
+    <div class="sffoot" id="sf-foot"></div>
+  </div>
+
+  <div id="step-shut" class="card shut" style="display:none">
+    <div class="ic">🔒</div>
+    <h3 id="shut-h">아직 작성 시간이 아닙니다</h3>
+    <div class="big mono" id="shut-count">—</div>
+    <p id="shut-p"></p>
+  </div>
+
+  <div id="step-id" class="card" style="display:none">
+    <h2><span class="dot"></span>본인 확인 <span class="tag">매일 진행됩니다</span></h2>
+    <div class="when" id="when"></div>
+    <div class="field">
+      <label for="q-name">이름</label>
+      <input type="text" id="q-name" maxlength="20" placeholder="이름 입력" autocomplete="off">
+      <div class="picks" id="picks" style="margin-top:9px"></div>
+      <div class="hint" id="name-hint">두 글자만 입력하셔도 찾아 드립니다</div>
+      <button type="button" class="notme" id="not-me">다른 분이면 여기를 눌러 이름을 새로 입력</button>
+    </div>
+    <div class="field" id="code-field" style="display:none">
+      <label for="q-code"><span id="picked"></span> 님 생년월일 6자리</label>
+      <input type="text" id="q-code" inputmode="numeric" maxlength="6" placeholder="생년월일 6자리" autocomplete="off">
+    </div>
+    <div class="err" id="id-err"></div>
+    <button class="btn" id="btn-ok" style="display:none">확인</button>
+  </div>
+
+  <div id="step-read" class="card" style="display:none">
+    <div id="stale" class="banner warn" style="display:none;margin-bottom:13px">
+      <span>📌</span><span>오늘 공지가 아직 올라오지 않아 <b>가장 최근 공지</b>입니다.</span>
+    </div>
+    <div class="ntitle" id="n-title"></div>
+    <div class="ndate" id="n-date"></div>
+    <div class="nbody" id="n-body"></div>
+    <div class="sentinel" id="sentinel"></div>
+  </div>
+  <div id="daily" class="daily" style="display:none">
+    <div class="dtitle">매일 지킬 것</div>
+    <ol class="dlist" id="daily-list"></ol>
+    <div class="dcau" id="daily-cau" style="display:none"></div>
+    <div class="wsec" id="daily-works" style="display:none">
+      <div class="wtitle">중요 6개 작업 — 구간 TBM 반드시 실행</div>
+      <div class="wchips" id="daily-wlist"></div>
+    </div>
+  </div>
+  <div id="gate" class="gate" style="display:none"><span class="spin"></span><span id="gate-m"></span></div>
+  <label class="ack" id="ack" style="display:none">
+    <input type="checkbox" id="ack-box">
+    <span class="box" aria-hidden="true"></span>
+    <span class="tx"><b>위 공지 내용을 모두 읽고 숙지하였습니다.</b>
+      <span>작업 중 모르는 상황이 생기면 멈추고 손을 들겠습니다.</span></span>
+  </label>
+  <button class="btn" id="btn-read" style="display:none" disabled>공지를 확인했습니다</button>
+
+  <div id="step-dict" class="card dict" style="display:none">
+    <div class="dhead">
+      <h2><span class="dot"></span>받아쓰기</h2>
+      <span class="dcount mono" id="d-tag"></span>
+    </div>
+    <div class="pips" id="d-pips"></div>
+    <div class="donelist" id="d-done"></div>
+
+    <div class="sentwrap" id="sentwrap">
+      <span class="lab a" id="d-lab"></span>
+      <div class="sent" id="d-sent"></div>
+      <div class="sentnotch"></div>
+    </div>
+
+    <div class="spacetip">위 문장을 보고 <b>그대로</b> 입력해 주세요. 띄어쓰기까지 같아야 합니다.</div>
+
+    <div class="inwrap">
+      <textarea id="d-input" placeholder="여기에 입력해 주세요" autocomplete="off"
+        autocapitalize="off" autocorrect="off" spellcheck="false"></textarea>
+      <div class="meter"><div class="bar"><div class="fill" id="d-fill"></div></div></div>
+    </div>
+
+    <div class="dstat">
+      <span id="d-left">문장을 보며 그대로 입력해 주세요</span>
+      <span class="dnums"><b class="pct mono" id="d-pct">0%</b><span class="mono" id="d-right"></span></span>
+    </div>
+    <div class="err" id="d-err"></div>
+    <button class="btn dnext" id="btn-dict" disabled>다음</button>
+  </div>
+
+  <div id="step-sign" class="card" style="display:none">
+    <div class="dhead">
+      <h2><span class="dot"></span>확인 서약</h2>
+      <span class="dcount mono" id="g-tag"></span>
+    </div>
+
+    <div class="gq" id="g-q">
+      <div class="t" id="g-title"></div>
+      <div class="s" id="g-sub"></div>
+      <span class="r">매일 확인</span>
+    </div>
+
+    <div class="ghd">지켜야 할 것</div>
+    <div class="gbody" id="g-body"></div>
+
+    <div class="ghd">아래 내용에 동의합니다</div>
+    <div class="gsub">한 줄씩 읽고 <b>위에서부터 차례로</b> 오른쪽 칸을 눌러 주세요</div>
+    <div class="gagree">
+      <div id="g-list"></div>
+    </div>
+
+    <div class="ghd">서명</div>
+    <div class="gvow" id="g-vow">
+      <div class="vrow">
+        <input type="text" id="v-name" placeholder="이름" autocomplete="off" maxlength="20">
+        <span class="vt">은 &ldquo;위 상기 항목에 대해 잘 읽어보았으며
+</span>
+        <span class="vw"><b class="vt" id="v-word-t">준수할 것을</b>
+        <input type="text" id="v-word" placeholder="서약" autocomplete="off" maxlength="6">
+        <span class="vt">합니다.&rdquo;</span></span>
+      </div>
+      <div class="vhint" id="v-hint"></div>
+    </div>
+
+    <div class="lastcall">
+      <b>아직 제출되지 않았습니다.</b>
+      <span>아래 버튼을 눌러 주셔야 오늘 확인이 기록됩니다.</span>
+    </div>
+
+    <div class="err" id="sign-err"></div>
+    <div class="pointer" id="sign-point" aria-hidden="true">👇</div>
+    <button class="btn tncbtn" id="btn-sign" disabled>
+      <span class="t1">서약하고 제출</span>
+      <span class="t2">위 내용을 모두 확인했습니다</span>
+    </button>
+  </div>
+
+  <div id="step-done" class="card done" style="display:none">
+    <div class="ic"><svg viewBox="0 0 48 48" aria-hidden="true">
+      <path d="M13 24.5 L21 32.5 L35 16" fill="none" stroke="#4ade80" stroke-width="5"
+        stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    <h3 id="done-h">확인 완료</h3>
+    <div class="sub" id="done-sub"></div>
+    <div class="recap">
+      <div><span class="k">날짜</span><span class="v" id="r-date"></span></div>
+      <div><span class="k">소속 · 이름</span><span class="v" id="r-who"></span></div>
+      <div><span class="k">PJT</span><span class="v" id="r-pjt"></span></div>
+      <div><span class="k">시작 · 제출</span><span class="v mono" id="r-time"></span></div>
+    </div>
+
+    <div class="cal" id="cal" style="display:none">
+      <div class="calhd"><b id="cal-t"></b><span id="cal-s"></span></div>
+      <div class="caldow"><i>일</i><i>월</i><i>화</i><i>수</i><i>목</i><i>금</i><i>토</i></div>
+      <div class="calgrid" id="cal-g"></div>
+      <div class="callg">
+        <span id="lg-on"><i class="sw on"></i>확인한 날</span>
+        <span><i class="sw now"></i>오늘</span>
+      </div>
+    </div>
+    <div class="bye">오늘 하루도 안전하게 마무리하시길 바랍니다.<br><b>OSF Solution</b></div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div class="al" id="al" role="status" aria-live="polite"><div class="alc" id="al-c"></div></div>
+
+</div>
+
+<script>
+(function () {
+  'use strict';
+  var $ = function (i) { return document.getElementById(i); };
+  var S = {boot:null,name:'',code:'',vendor:'',pjt:'',device:'',
+           readStart:0,readSec:0,di:0,typed:[],typeStart:0,typeSec:0,auto:null,busy:false};
+
+  function put(k,v){ try{ localStorage.setItem('tbm_'+k,v); }catch(e){} }
+  function get(k){ try{ return localStorage.getItem('tbm_'+k)||''; }catch(e){ return ''; } }
+  function devId(){ var d=get('dev'); if(!d){ d='d'+Date.now().toString(36)+Math.random().toString(36).slice(2,10); put('dev',d);} return d; }
+  function el(t,c,x){ var n=document.createElement(t); if(c)n.className=c; if(x!==undefined)n.textContent=x; return n; }
+  function step(n){
+    ['s1','s2','s3','s4'].forEach(function(id,i){
+      $(id).className='stp'+((i+1<n)?' fin':(i+1===n?' cur':''));
+    });
+    // 끝나면 네 칸 모두 완료로 둡니다.
+    if(n>=5) ['s1','s2','s3','s4'].forEach(function(id){ $(id).className='stp fin'; });
+  }
+  function show(id){
+    // 화면을 바꿀 때는 언제나 맨 위에서 시작합니다.
+    // 안 그러면 앞 화면에서 자판 때문에 내려가 있던 자리를 그대로 물고 가서,
+    // 공지 제목처럼 맨 위에 있어야 할 것이 잘린 채로 뜹니다.
+    window.scrollTo(0,0);
+    ['step-shut','step-id','step-read','step-dict','step-sign','step-done'].forEach(function(s){ $(s).style.display='none'; });
+    $('gate').style.display='none'; $('btn-read').style.display='none';
+    if($('ack')) $('ack').style.display='none';
+    if($('daily')) $('daily').style.display='none';
+    // 무사고 기록판은 첫 화면에만 큰 판으로 둡니다. 공지를 읽기 시작하면
+    // 단계 줄에 한 줄로 따라붙어 끝까지 같이 갑니다.
+    var 첫화면=(id==='step-id'||id==='step-shut');
+    if($('safe')) $('safe').style.display=(S.safeOn && 첫화면)?'block':'none';
+    $('steps').className='steps'+(첫화면?'':' slim');
+    $(id).style.display='block';
+  }
+  function fmtDate(d){
+    var p=String(d||'').split('-'); if(p.length!==3) return String(d||'');
+    var w=['일','월','화','수','목','금','토'];
+    return p[0]+'년 '+(+p[1])+'월 '+(+p[2])+'일 ('+w[new Date(+p[0],+p[1]-1,+p[2]).getDay()]+')';
+  }
+  /** 머리글용 짧은 날짜. 「2026년 10월 23일 (금)」 는 길어서 줄이 넘어갑니다. */
+  function fmtDay(d){
+    var p=String(d||'').split('-'); if(p.length!==3) return String(d||'');
+    var w=['일','월','화','수','목','금','토'];
+    return (+p[1])+'월 '+(+p[2])+'일 ('+w[new Date(+p[0],+p[1]-1,+p[2]).getDay()]+')';
+  }
+  function flat(s){ return String(s||'').replace(/[\s·,.。，!?~\-()\[\]"'`]/g,'').toLowerCase(); }
+  // 서버 plain_ 과 같은 규칙. 글자와 띄어쓰기만 남깁니다.
+  // 마침표·쉼표·슬래시를 쳐도 안 쳐도 똑같이 봅니다. 띄어쓰기는 따집니다.
+  // 치는 중에는 끝의 빈칸 하나를 남겨 둡니다. 그래야 흐린 글자 자리가 안 틀어집니다.
+  function normChars(s){
+    return String(s==null?'':s)
+      .replace(/[^0-9A-Za-z\uac00-\ud7a3\u3131-\u318e\s]/g,' ')
+      .replace(/\s+/g,' ')
+      .replace(/^ /,'');
+  }
+  function strict(s){ return normChars(s).trim(); }
+  function acc(a,b){
+    // 대문자와 소문자는 같은 글자로 봅니다.
+    a=strict(a).toLowerCase(); b=strict(b).toLowerCase();
+    if(a===b) return 100;
+    if(!a&&!b) return 100;
+    if(!a||!b) return 0;
+    var m=a.length,n=b.length,prev=[],cur=[],i,j;
+    for(j=0;j<=n;j++) prev[j]=j;
+    for(i=1;i<=m;i++){
+      cur[0]=i;
+      for(j=1;j<=n;j++) cur[j]=Math.min(prev[j]+1,cur[j-1]+1,prev[j-1]+(a.charAt(i-1)===b.charAt(j-1)?0:1));
+      for(j=0;j<=n;j++) prev[j]=cur[j];
+    }
+    return Math.max(0,Math.round((1-prev[n]/Math.max(m,n))*100));
+  }
+  function renderBody(text){
+    var box=$('n-body'); box.textContent='';
+    String(text||'').split(/\r?\n/).forEach(function(raw){
+      var line=raw.trim(), m;
+      if(!line){ box.appendChild(el('div','gap')); return; }
+      if(/^■/.test(line)) box.appendChild(el('div','sec',line.replace(/^■\s*/,'')));
+      else if((m=line.match(/^([①-⑩•\-])\s*(.*)$/))){
+        var d=el('div','li'); d.appendChild(el('span','n',m[1])); d.appendChild(el('span','',m[2])); box.appendChild(d);
+      } else if(/^※/.test(line)) box.appendChild(el('div','cau',line));
+      else if((m=line.match(/^(\d{1,2}\/\d{1,2})\s+(.*)$/))){
+        var c=el('div','case'); c.appendChild(el('span','d',m[1])); c.appendChild(el('span','',m[2])); box.appendChild(c);
+      } else box.appendChild(el('div','p',line));
+    });
+  }
+
+  function shut(g){
+    show('step-shut'); step(1); guard(false);
+    clearInterval(S.shutT);
+    if(g.why==='late'){
+      $('shut-h').textContent='오늘 작성 시간이 종료되었습니다';
+      $('shut-count').textContent=g.from+' ~ '+g.to;
+      $('shut-p').textContent='오늘은 마감되었습니다. 리더에게 문의해 주세요.';
+      return;
+    }
+    $('shut-h').textContent='아직 작성 시간이 아닙니다';
+    $('shut-p').textContent=g.from+' 부터 작성하실 수 있습니다.';
+    // 남은 시간은 서버 시각으로 셉니다. 휴대폰 시계가 틀어져 있어도
+    // 화면이 보여 주는 시간과 실제로 열리는 때가 어긋나지 않습니다.
+    var op=String(g.from).split(':');
+    var openSec=(+op[0]||0)*3600+(+op[1]||0)*60;
+    var np=String(g.nows||g.now||'00:00:00').split(':');
+    var baseSec=(+np[0]||0)*3600+(+np[1]||0)*60+(+np[2]||0);
+    var at=Date.now();
+    clearInterval(S.shutT);
+    function tick(){
+      var now=baseSec+Math.floor((Date.now()-at)/1000);
+      var left=openSec-now;
+      if(left<=0){
+        clearInterval(S.shutT);
+        $('shut-count').textContent='지금 열렸습니다';
+        $('shut-p').textContent='잠시 후 작성 화면으로 넘어갑니다.';
+        setTimeout(function(){ location.reload(); },1200);
+        return;
+      }
+      var h=Math.floor(left/3600), m=Math.floor(left%3600/60), x=left%60;
+      $('shut-count').textContent=(h?h+':'+('0'+m).slice(-2):String(m))+':'+('0'+x).slice(-2);
+      $('shut-p').textContent=g.from+' 부터 작성하실 수 있습니다. (지금 '
+        +('0'+Math.floor(now/3600)%24).slice(-2)+':'+('0'+Math.floor(now/60)%60).slice(-2)+')';
+    }
+    tick(); S.shutT=setInterval(tick,1000);
+  }
+
+  var nameTimer = null;
+  function onName(){
+    var q = $('q-name').value.trim();
+    S.name=''; $('code-field').style.display='none'; $('btn-ok').style.display='none';
+    $('not-me').style.display='none';
+    hideErr('id-err');
+    clearTimeout(nameTimer);
+    if(q.length < 1){ $('picks').textContent=''; $('name-hint').textContent='두 글자만 입력하셔도 찾아 드립니다'; return; }
+    nameTimer = setTimeout(function(){ runSearch(q); }, 250);
+  }
+  function runSearch(q){
+    google.script.run.withSuccessHandler(function(r){
+      if(!r||!r.ok){
+        if(r&&r.gate&&!r.gate.open){ shut(r.gate); return; }
+        return;
+      }
+      showNames(r.names,q);
+    }).withFailureHandler(function(){}).searchNames(q);
+  }
+  function showNames(names,q){
+    var box=$('picks'); box.textContent='';
+    if(!names.length){
+      $('name-hint').textContent='명단에서 찾지 못했습니다. 리더에게 문의해 주세요.';
+      return;
+    }
+    $('name-hint').textContent='본인 이름을 선택해 주세요';
+    names.forEach(function(n){
+      var b=el('button','',n); b.type='button';
+      b.addEventListener('click',function(){ pickName(n); });
+      box.appendChild(b);
+    });
+  }
+  function pickName(n){
+    S.name=n;
+    $('q-name').value=n;
+    $('picks').textContent='';
+    $('name-hint').textContent='';
+    $('picked').textContent=n;
+    $('code-field').style.display='block';
+    $('btn-ok').style.display='block';
+    $('q-code').value=''; $('q-code').focus();
+  }
+  /**
+   * 확인을 누르면 서버를 두 번 부릅니다. 본인 확인 다음에 입장 기록입니다.
+   * 둘이 다 끝날 때까지 버튼을 잠가 둡니다. 중간에 풀어 두면
+   * 아무 일도 안 일어나는 것처럼 보여서 한 번 더 누르시게 됩니다.
+   */
+  function doVerify(){
+    if(S.idBusy) return;
+    var c=$('q-code').value.replace(/\D/g,'');
+    if(!S.name){ fail('id-err','이름을 선택해 주세요.'); return; }
+    if(c.length!==6){ fail('id-err','생년월일 6자리를 입력해 주세요.'); return; }
+    hideErr('id-err');
+    S.idBusy=true; lock($('btn-ok'),true,'확인 중...');
+    google.script.run.withSuccessHandler(function(r){ onVerify(r,c); })
+      .withFailureHandler(function(){ idFree('연결이 원활하지 않습니다. 다시 시도해 주세요.'); })
+      .verifyMember(S.name,c);
+  }
+  function idFree(msg){
+    S.idBusy=false; lock($('btn-ok'),false,'확인');
+    if(msg) fail('id-err',msg);
+  }
+  function onVerify(r,c){
+    if(!r||!r.ok){
+      if(r&&r.gate&&!r.gate.open){ S.idBusy=false; shut(r.gate); return; }
+      idFree((r&&r.message)||'확인하지 못했습니다. 다시 시도해 주세요.'); return;
+    }
+    S.code=c;
+    put('name',r.name);        // 맞게 들어오신 이름만 기억합니다. 생년월일은 남기지 않습니다.
+    lock($('btn-ok'),true,'들어가는 중...');
+    enter({name:r.name,vendor:r.vendor,pjt:r.pjt});
+  }
+
+  function enter(p){
+    S.name=p.name; S.vendor=p.vendor; S.pjt=get('pjt')||p.pjt;
+    put('vendor',p.vendor||''); put('basepjt',p.pjt||'');
+    google.script.run.withSuccessHandler(function(r){
+        S.idBusy=false; lock($('btn-ok'),false,'확인');
+        // 오늘 이미 제출하셨으면 다시 쓰게 하지 않고 낸 기록을 보여 드립니다.
+        if(r && r.done){ afterSubmit(Object.assign({ok:true,already:true},r.done)); return; }
+        // 중간에 튕기셨거나 나가셨다 오셨으면 하던 자리에서 이어 갑니다.
+        goOn(r && r.resume);
+        loginAlert(r && r.resume);
+      })
+      .withFailureHandler(function(){ S.idBusy=false; lock($('btn-ok'),false,'확인'); goRead(); })
+      .markEnter(p.name,S.code,S.device);
+  }
+
+  /**
+   * 하던 자리에서 이어 갑니다.
+   * 공지를 읽다 나가셨으면 공지부터, 다 읽으셨으면 받아쓰기부터,
+   * 받아쓰기까지 하셨으면 서약부터. 이미 하신 것은 다시 안 시킵니다.
+   */
+  function goOn(r){
+    if(!r || !r.step){ goRead(); return; }
+    S.readSec = r.rs || 0;
+    S.typed   = (r.tp || []).slice();
+    S.typeSec = r.ts || 0;
+    S.clean   = r.cl || 0;
+    S.fix     = r.fx || 0;
+    S.back    = {imgSec: r.ig || 0, agreed: r.ag || 0};
+    if(r.step==='확인 서약' && S.readSec){ goSign(); back('확인 서약'); return; }
+    if(r.step==='받아쓰기'  && S.readSec){
+      var 다 = (S.boot.dictation||[]).length;
+      var 친줄 = S.typed.filter(function(t){ return t; }).length;
+      // 세 줄을 다 치고 나간 분은 받아쓰기로 되돌리지 않고 서약으로 보냅니다.
+      if(친줄 >= 다 && 다 > 0){ goSign(); back('확인 서약'); return; }
+      S.di = Math.max(0, Math.min(다 - 1, 친줄));
+      goDict(true); back('받아쓰기'); return;
+    }
+    goRead();
+  }
+  /** 이어서 하신다고 한 줄 알려 드립니다. 갑자기 중간부터 시작하면 당황하십니다. */
+  function back(where){
+    var b=$('resume'); if(!b) return;
+    b.textContent='';
+    b.appendChild(el('span','','↩︎'));
+    var t=el('span','');
+    t.appendChild(document.createTextNode('아까 하시던 '));
+    t.appendChild(el('b','',where));
+    t.appendChild(document.createTextNode(' 부터 이어 갑니다'));
+    b.appendChild(t);
+    b.style.display='flex';
+    clearTimeout(S.backT);
+    S.backT=setTimeout(function(){ b.style.display='none'; },6000);
+  }
+
+  /** 어디까지 왔는지 서버에 적어 둡니다. 안 되더라도 진행은 그대로 갑니다. */
+  function mark(stepName, data){
+    if(!S.name||!S.code) return;
+    try{
+      google.script.run.withSuccessHandler(function(){})
+        .withFailureHandler(function(){}).markStep(S.name,S.code,stepName,data||null);
+    }catch(e){}
+  }
+  /** 지금까지 한 것을 한 덩이로 묶습니다. 이어하기에 쓰입니다. */
+  function sofar(){
+    var sg=S.sg||S.back||{};
+    // 친 줄은 다 보냅니다. di 로 자르면 마지막 줄이 빠집니다
+    // (마지막 줄은 다 쓰고도 di 가 안 올라가기 때문입니다).
+    return {rs:S.readSec||0, di:S.di||0, tp:(S.typed||[]).slice(),
+            ts:S.typeSec||0, cl:S.clean||0, fx:S.fix||0,
+            ig:sg.imgSec||0, ag:sg.agreed||0};
+  }
+
+  /** 매일 지킬 것. 공지 본문과 떼어 아래에 둡니다. */
+  function paintDaily(){
+    var d=(S.boot&&S.boot.daily)||{}, lines=d.lines||[];
+    var box=$('daily'); if(!box) return;
+    if(!lines.length){ box.style.display='none'; return; }
+    var ol=$('daily-list'); ol.textContent='';
+    var f=Number(S.boot.focus||0);
+    lines.forEach(function(t,i){
+      var li=el('li','',''), tx=el('span','',t);
+      if(i+1===f){
+        li.className='focus';
+        li.appendChild(tx);
+        li.appendChild(el('span','wk','오늘 꼭 기억'));
+      } else li.appendChild(tx);
+      ol.appendChild(li);
+    });
+    var c=$('daily-cau');
+    if(d.caution){ c.textContent='※ '+d.caution; c.style.display='block'; }
+    else c.style.display='none';
+
+    // 중요 6개 작업 — 오늘 받아쓸 것 하나를 띄워 둡니다
+    var ws=d.works||[], wf=Number(S.boot.workFocus||0), wb=$('daily-works');
+    if(ws.length){
+      var wl=$('daily-wlist'); wl.textContent='';
+      ws.forEach(function(t,i){
+        // '구간 TBM 반드시 실행' 은 제목에 있으니 작업 이름만 보여 드립니다
+        var nmx=String(t).replace(/\s*(은|는)?\s*구간 TBM.*$/,'').trim()||t;
+        var sp=el('span', i+1===wf?'on':'');
+        sp.appendChild(document.createTextNode(nmx));
+        // 매일 지킬 것과 똑같은 표시를 답니다
+        if(i+1===wf) sp.appendChild(el('b','wk','오늘 꼭 기억'));
+        wl.appendChild(sp);
+      });
+      wb.style.display='block';
+    } else wb.style.display='none';
+
+    box.style.display='block';
+  }
+
+  function goRead(){
+    $('who').textContent='';
+    $('who').appendChild(el('b','',S.name));
+    $('who').appendChild(el('span','',(S.vendor?S.vendor+' · ':'')+fmtDay(S.boot.date)));
+    step(2); show('step-read'); mark('공지 확인');
+    paintDaily();
+    $('gate').style.display='flex'; $('btn-read').style.display='block';
+    $('ack').style.display='none'; $('ack-box').checked=false;
+    S.readStart=Date.now();
+    var seen=false,dwell=false,left=Math.max(S.boot.minRead||15,8);
+    $('gate-m').textContent='공지를 끝까지 확인해 주세요 ('+left+'초)';
+    var t=setInterval(function(){
+      left--;
+      if(left<=0){ clearInterval(t); dwell=true; open(); }
+      else $('gate-m').textContent='공지를 끝까지 확인해 주세요 ('+left+'초)';
+    },1000);
+    function open(){
+      if(!(seen&&dwell)) return;
+      // 다 보셨으면 기다리라는 줄은 치우고, 체크 한 칸만 남깁니다.
+      $('gate').style.display='none';
+      $('ack').style.display='flex';
+      $('btn-read').disabled=!$('ack-box').checked;
+    }
+    $('ack-box').onchange=open;
+    if('IntersectionObserver' in window){
+      var io=new IntersectionObserver(function(es){
+        if(es.some(function(e){ return e.isIntersecting; })){ seen=true; io.disconnect(); open(); }
+      },{root:null,threshold:0});
+      io.observe($('sentinel'));
+    } else seen=true;
+    window.addEventListener('scroll',function h(){
+      if(window.innerHeight+window.scrollY>=document.body.scrollHeight-140){ seen=true; open(); window.removeEventListener('scroll',h); }
+    },{passive:true});
+  }
+
+  function cur(){ return S.boot.dictation[S.di]; }
+  function goDict(이어서){
+    if(!이어서) S.readSec=Math.round((Date.now()-S.readStart)/1000);
+    if(!S.boot.dictation||!S.boot.dictation.length){ goSign(); return; }
+    if(!이어서){ S.di=0; S.typed=[]; S.clean=0; S.fix=0; }
+    S.typeStart=Date.now();
+    step(3); show('step-dict'); mark('받아쓰기', sofar()); loadSent();
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+  function loadSent(){
+    var d=cur(), n=S.boot.dictation.length;
+    $('d-tag').textContent=(S.di+1)+' / '+n;
+    renderPips(n);
+    $('d-lab').textContent=d.label+(d.src&&d.label.indexOf('지난')>=0?' '+String(d.src).slice(5).replace('-','/'):'');
+    $('d-lab').className='lab '+(d.label==='복창'?'a':'b');
+    paintGhost('');
+    S.lineBad=false; S.lastLen=0;   // 이 줄에서 틀린 적 있는지, 직전 글자 수
+    $('d-input').value=''; $('d-input').disabled=false;
+    $('d-left').textContent='문장을 보며 그대로 입력해 주세요';
+    $('d-right').textContent='0 / '+d.text.length+'자';
+    $('d-fill').style.width='0'; $('d-pct').textContent='0%'; $('d-pct').style.color='';
+    $('btn-dict').disabled=true;
+    $('btn-dict').textContent=(S.di===n-1)?'확인 서약으로 →':'다음';
+    renderDone(); hideErr('d-err');
+    $('d-input').focus();
+    fitDict();
+  }
+  /**
+   * 받아쓸 문장을 글자 하나씩 깔아 둡니다.
+   * 안 친 글자는 흐리게, 맞게 친 글자는 밝게, 틀린 글자는 빨갛게.
+   * 띄어쓰기는 밑줄로 보여 줘야 빠뜨린 걸 알 수 있습니다.
+   */
+  function paintGhost(typed){
+    var t=strict(cur().text), v=String(typed==null?'':typed);
+    var box=$('d-sent'); box.textContent='';
+    // 글자 수를 세는 기준은 서버와 같게 맞춥니다. 앞 공백만 떼고 비교합니다.
+    var w=normChars(v).replace(/^[\s]+/,'');
+    for(var i=0;i<t.length;i++){
+      var ch=t.charAt(i), sp=(ch===' ');
+      var sn=el('span','g'+(sp?' sp':''), sp?'\u00a0':ch);
+      if(i<w.length) sn.className+=(w.charAt(i).toLowerCase()===ch.toLowerCase())?' hit':' bad';
+      else if(i===w.length) sn.className+=' cur';
+      box.appendChild(sn);
+    }
+    if(w.length>t.length){
+      box.appendChild(el('span','extra', w.slice(t.length).replace(/ /g,'\u00a0')));
+    }
+  }
+  /** 줄 수만큼 칸을 그립니다. 지나온 칸은 초록, 지금 칸은 보라. */
+  function renderPips(n){
+    var box=$('d-pips'); if(!box) return;
+    box.textContent='';
+    for(var i=0;i<n;i++){
+      box.appendChild(el('i', i<S.di?'fin':(i===S.di?'cur':'')));
+    }
+  }
+  /**
+   * 받아쓸 문장이 고정 머리줄에 가리지 않도록 자리를 맞춥니다.
+   * 삼성 브라우저는 자판이 올라온 뒤에 한 번 더 끌어올리므로 두 번 맞춰 줍니다.
+   */
+  function fitDict(){
+    function go(){
+      var card=$('step-dict'); if(!card || card.style.display==='none') return;
+      // 기준은 카드 윗머리가 아니라 '보고 칠 문장' 입니다. 그게 머리글 뒤로
+      // 들어가면 받아쓰기를 못 합니다. 문장 위에 걸친 이름표 자리까지 봅니다.
+      var 칸=$('sentwrap') || card;
+      var top=document.querySelector('.top');
+      var 머리=(top && getComputedStyle(top).display!=='none')
+               ? Math.round(top.getBoundingClientRect().height) : 0;
+      var y=window.scrollY + 칸.getBoundingClientRect().top - 머리 - 18;
+      window.scrollTo(0, Math.max(0, Math.round(y)));
+    }
+    go();
+    // 자동으로 칸에 손이 가면 브라우저가 한 번 더 끌어올립니다.
+    // 삼성 브라우저는 늦게 한 번 더 움직여서, 뒤까지 여러 번 맞춰 줍니다.
+    [120,300,560,900].forEach(function(t){ setTimeout(go,t); });
+  }
+
+  function renderDone(){
+    var box=$('d-done'); box.textContent='';
+    for(var i=0;i<S.di;i++){
+      var row=el('div');
+      row.appendChild(el('span','tick','\u2713'));
+      row.appendChild(el('span','',S.boot.dictation[i].text));
+      box.appendChild(row);
+    }
+  }
+  function onType(){
+    var t=cur().text, v=$('d-input').value;
+    paintGhost(v);
+    // 지웠다 = 고쳤다. 수정 횟수와 무수정으로 맞춘 줄 수를 세어 둡니다.
+    if(v.length < (S.lastLen||0)) { S.fix=(S.fix||0)+1; S.lineBad=true; }
+    S.lastLen=v.length;
+    var cw=normChars(v).replace(/^ /,''), ct=strict(t);
+    for(var ci=0; ci<cw.length && ci<ct.length; ci++){
+      if(cw.charAt(ci).toLowerCase()!==ct.charAt(ci).toLowerCase()){ S.lineBad=true; break; }
+    }
+    if(cw.length>ct.length) S.lineBad=true;
+    var a=acc(t,v), pass=S.boot.passAcc||95;
+    // 여기까지 친 글자가 문장과 어긋났는지. 덜 쓴 것은 틀린 것이 아닙니다.
+    var off=(cw.length>ct.length);
+    for(var cj=0; !off && cj<cw.length && cj<ct.length; cj++){
+      if(cw.charAt(cj).toLowerCase()!==ct.charAt(cj).toLowerCase()) off=true;
+    }
+    var col=(a>=pass)?'#22c55e':(off?'#ef4444':'#609ff2');
+    $('d-pct').textContent=a+'%';
+    $('d-fill').style.width=a+'%';
+    $('d-fill').style.background=col;
+    $('d-pct').style.color=(a>=pass)?'#22c55e':(off?'#f87171':'#8b949e');
+    $('d-right').textContent=v.length+' / '+t.length+'자';
+    var ok=a>=pass;
+    $('btn-dict').disabled=!ok;
+    $('d-left').textContent=ok?'정확합니다':hintFor(strict(t),strict(v));
+    // 마지막 줄도 똑같습니다. 다 맞으면 버튼을 누르지 않아도 다음으로 넘어갑니다.
+    if(ok){
+      clearTimeout(S.auto);
+      S.auto=setTimeout(function(){ if(!$('btn-dict').disabled) nextSent(); },450);
+    }
+  }
+  /** 어디가 틀렸는지 한 마디로 집어 줍니다. */
+  function hintFor(t,v){
+    if(!v) return '문장을 보며 입력해 주세요';
+    t=t.toLowerCase(); v=v.toLowerCase();
+    var i=0; while(i<t.length&&i<v.length&&t.charAt(i)===v.charAt(i)) i++;
+    if(i>=t.length) return v.length>t.length?'뒤에 글자가 더 있습니다. 확인해 주세요':'문장과 다른 부분이 있습니다';
+    if(i>=v.length) return t.charAt(i)===' '?'여기서 한 칸 띄어 주세요':'계속 입력해 주세요';
+    if(t.charAt(i)===' ') return '한 칸 띄어 주세요';
+    if(v.charAt(i)===' ') return '여기는 붙여 주세요';
+    return (i+1)+'번째 글자를 확인해 주세요';
+  }
+  function nextSent(){
+    clearTimeout(S.auto);
+    S.typed[S.di]=$('d-input').value;
+    if(!S.lineBad) S.clean=(S.clean||0)+1;
+    if(S.di<S.boot.dictation.length-1){
+      S.di++;
+      S.typeSec=Math.round((Date.now()-S.typeStart)/1000)+(S.typeSec||0);
+      S.typeStart=Date.now();
+      mark('받아쓰기', sofar());      // 한 줄 끝낼 때마다 적어 둡니다
+      loadSent();
+    }
+    else { S.typeSec=Math.round((Date.now()-S.typeStart)/1000); goSign(); }
+  }
+
+  /** 아직 제출 전이면 창을 닫으실 때 한 번 여쭙습니다. */
+  function guard(on){
+    S.guard=!!on;
+    if(!on || S.guardOn) return;
+    S.guardOn=true;
+    window.addEventListener('beforeunload', S.gh=function(e){
+      if(!S.guard) return;
+      e.preventDefault(); e.returnValue='';
+    });
+    // 뒤로 가기를 누르시면 처음부터 다시 하셔야 합니다. 그래서 막습니다.
+    // 역사 칸을 하나 쌓아 두고, 눌리면 다시 쌓아 제자리에 세웁니다.
+    try{ history.pushState({osf:1},''); }catch(e){}
+    window.addEventListener('popstate', function(){
+      if(!S.guard) return;
+      try{ history.pushState({osf:1},''); }catch(e){}
+      backSaid();
+    });
+  }
+  /** 뒤로 가기를 누르셨을 때, 무슨 일이고 무엇을 하셔야 하는지 알려 드립니다. */
+  function backSaid(){
+    toast('뒤로 가기로는 나가지지 않습니다. 화면의 버튼으로 진행해 주세요.');
+  }
+  /** 화면 아래에 잠깐 뜨는 알림 띠. */
+  function toast(m, 경고){
+    var t=$('toast');
+    t.textContent=m;
+    t.className='toast on'+(경고?' warn':'');
+    clearTimeout(S.toastT);
+    S.toastT=setTimeout(function(){ t.className='toast'+(경고?' warn':''); },2800);
+  }
+  /* ───── 확인 서약 ─────
+     바꾸시기 전까지 날마다 똑같이 나갑니다. 돌아가며 바뀌는 공지와 다릅니다.
+     체크시트는 반드시 눌러서 정해진 시간만큼 봐야 넘어갑니다.
+     막는 것은 화면과 서버 양쪽에서 합니다. 화면만 막으면 뚫립니다. */
+
+  function goSign(){
+    step(4); show('step-sign'); guard(true);
+    var g=(S.boot&&S.boot.sign)||{};
+    S.sg={on:!!g.on, need:(g.agree||[]).length, wait:g.wait||0,
+          word:g.word||'', seen:false, imgSec:0, agreed:0};
+    S.pjt=S.pjt||get('basepjt')||'';
+    signBtn(true,'서약하고 제출','위 내용을 모두 확인했습니다');
+
+    $('g-title').textContent=g.title||'확인 서약';
+    $('g-sub').textContent=g.sub||'';
+    $('g-tag').textContent=S.sg.need?('동의 0 / '+S.sg.need):'';
+
+    // 본문
+    var b=$('g-body'); b.textContent='';
+    (g.body||[]).forEach(function(t){
+      var row=el('div','b');
+      row.appendChild(el('i','','·'));
+      var tx=el('span','');
+      // '중요' '확인, 또 확인' 같은 말은 눈에 띄게 둡니다.
+      var m=/(확인, 또 확인|Coolant Leak)/.exec(t);
+      if(m){
+        tx.appendChild(document.createTextNode(t.slice(0,m.index)));
+        tx.appendChild(el('em','',m[0]));
+        tx.appendChild(document.createTextNode(t.slice(m.index+m[0].length)));
+      } else tx.textContent=t;
+      row.appendChild(tx);
+      b.appendChild(row);
+    });
+
+    // 동의 목록
+    var L=$('g-list'); L.textContent='';
+    (g.agree||[]).forEach(function(t,i){
+      var lab=document.createElement('label');
+      lab.className='gi';
+      var cb=document.createElement('input');
+      cb.type='checkbox'; cb.className='gck'; cb.setAttribute('data-i',String(i));
+      cb.addEventListener('change',function(){ sgSync(); });
+      // 잠긴 줄을 누르면 왜 안 되는지 알려 드립니다.
+      lab.addEventListener('click',function(e){ if(cb.disabled){ e.preventDefault(); toast('위 항목부터 차례로 체크',1); } });
+      // 체크칸은 글 '끝' 에 둡니다. 다 읽고 나서 손이 가는 자리입니다.
+      var tx=el('span','gtx');
+      tx.appendChild(document.createTextNode(t));
+      lab.appendChild(tx);
+      lab.appendChild(cb);
+      L.appendChild(lab);
+    });
+
+    // 서약란 — 적으시는 것은 이름 하나입니다. 나머지는 박아 둡니다.
+    $('v-name').value=''; $('v-word').value='';
+    $('v-word-t').textContent=String(S.sg.word||'준수할 것을 서약').replace(/\s*서약\s*$/,'');
+    $('v-hint').textContent='';
+    $('v-hint').appendChild(document.createTextNode('예시 : '));
+    $('v-hint').appendChild(el('b','',(S.name||'홍길동')));
+    $('v-hint').appendChild(document.createTextNode(
+      ' 은 "위 상기 항목에 대해 잘 읽어보았으며 '+(S.sg.word||'')+' 합니다."'));
+    if(!S.vwBound){ S.vwBound=true; $('v-name').addEventListener('input',sgSync); $('v-word').addEventListener('input',sgSync); }
+    // 그림이 없어졌으니 본 시간은 더 보지 않습니다.
+    S.sg.seen=true; S.sg.imgSec=0;
+    mark('확인 서약', sofar());
+    sgSync();
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+
+  /** 다 되셨는지 한 군데서 봅니다. 하나라도 비면 버튼이 안 열립니다. */
+  /* ───────── 로그인 알림 ─────────
+     최근 들어왔다 제출 없이 나간 날, 오랫동안 안 하신 경우에만 띄웁니다.
+     아무 일 없으면 아무것도 안 뜹니다. 하루에 한 번만입니다. */
+  var AL_SEC=5;
+  function loginAlert(rs){
+    var 하던=rs&&rs.step&&rs.step!=='본인 확인'&&rs.step!=='공지 확인';
+    if(하던 || get('al')===S.boot.date+'|'+S.name) return;
+    google.script.run.withSuccessHandler(function(x){
+        var a=x&&x.ok&&x.alert;
+        if(!a || !((a.miss&&a.miss.length)||a.gap)) return;
+        put('al',S.boot.date+'|'+S.name); showAlert(a);
+      }).withFailureHandler(function(){}).myAlert(S.name,S.code);
+  }
+
+  /* ───────── 양품확보 축하 ─────────
+     서약 제출을 마친 완료 화면에서 띄웁니다. 로그인 알림과 겹치지 않습니다. 폰마다 한 번씩.
+     · 매달 1일 : 그때까지 이어 온 무사고 개월 수 (1개월 이상일 때). 1일에 쉬었으면 그달 첫 제출 때.
+     · 목표 30일 전 · 20일 전 · 10일 전부터 1일 전까지 매일 : 그날 쉬었으면 다음 제출 때 남은 날짜로.
+     · 목표일 : 목표 달성. 그날 쉬었으면 다음 제출 때. */
+  function safeMilestone(){
+    var sf=S.sf; if(!sf||!sf.on||!sf.start) return;
+    var p=String(sf.start).split('-'), q=String(S.boot.date).split('-');
+    // 그달 1일 기준으로 이어 온 개월 수. 달 중간에 한 달이 차도 축하는 다음 달 1일에.
+    var 달=(+q[0]-+p[0])*12+(+q[1]-+p[1])-(1<(+p[2])?1:0);
+    var 이달=q[0]+'-'+q[1];
+    var 키, k;
+    if(sf.total && sf.done && sf.left<=0 && get('sfg|'+sf.goal)!=='1'){
+      키='sfg|'+sf.goal;
+      k={t:'goal',icon:'trophy',tag:'양품확보 목표 달성',big:sf.total+'<small>일</small>',sub:'<b>'+(sf.goalName||dash(sf.goal))+'</b> 무사고 달성',fx:'conf'};
+    }
+    if(!k && sf.total && !sf.done){
+      // 30일 전 · 20일 전 · 그리고 10일 전부터는 하루도 빠짐없이 1일 전까지
+      var 칸=[30,20,10,9,8,7,6,5,4,3,2,1].filter(function(d){ return sf.left<=d; }).pop();
+      if(칸 && get('sfd|'+sf.goal+'|'+칸)!=='1'){
+        키='sfd|'+sf.goal+'|'+칸;
+        k={t:'soon',icon:'flag',tag:'양품확보 목표',big:'D-'+sf.left,sub:'<b>'+dash(sf.goal)+'</b> '+(sf.goalName||''),fx:'spark'};
+      }
+    }
+    if(!k && 달>=1 && get('sfm|'+이달)!=='1'){
+      키='sfm|'+이달;
+      k={t:'month',icon:'medal',tag:'양품확보',big:달+'<small>개월</small>',
+         sub:'무사고 <b>'+sf.day+'일째</b>'+(sf.total&&!sf.done?' · 목표까지 <b>'+sf.left+'일</b>':''),fx:'spark'};
+    }
+    if(!k || get(키)==='1') return;
+    put(키,'1'); setTimeout(function(){ showCard(k); },900);
+  }
+  var ICON={
+    warn:'<svg viewBox="0 0 24 24"><path d="M12 3.2 2.6 19.6c-.4.7.1 1.4.9 1.4h17c.8 0 1.3-.7.9-1.4L12 3.2z" fill="#fff"/><path d="M12 9.6v4.6" stroke="var(--a1)" stroke-width="2.4" stroke-linecap="round"/><circle cx="12" cy="17.2" r="1.35" fill="var(--a1)"/></svg>',
+    clock:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12.5" r="8.6" fill="#fff"/><path d="M12 8v4.8l3.2 2" stroke="var(--a1)" stroke-width="2.3" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M8.5 2.6h7" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></svg>',
+    medal:'<svg viewBox="0 0 24 24"><path d="M8 2h3.3l1.2 5.2-3 1.3zM16 2h-3.3l-1.2 5.2 3 1.3z" fill="#fff" opacity=".75"/><circle cx="12" cy="15" r="6.8" fill="#fff"/><path d="m12 11.2 1.2 2.4 2.6.4-1.9 1.8.5 2.6-2.4-1.3-2.4 1.3.5-2.6-1.9-1.8 2.6-.4z" fill="var(--a1)"/></svg>',
+    flag:'<svg viewBox="0 0 24 24"><path d="M6 21.5V3" stroke="#fff" stroke-width="2.3" stroke-linecap="round"/><path d="M7 3.6h11.2l-2.6 4 2.6 4H7z" fill="#fff"/></svg>',
+    trophy:'<svg viewBox="0 0 24 24"><path d="M7 3h10v5.2a5 5 0 0 1-10 0z" fill="#fff"/><path d="M7 5.2H4.2v1.2A3.4 3.4 0 0 0 7.6 9.8M17 5.2h2.8v1.2a3.4 3.4 0 0 1-3.4 3.4" stroke="#fff" stroke-width="1.8" fill="none"/><path d="M10.6 13.2h2.8v3.6h-2.8zM8.2 18.2h7.6v2.6H8.2z" fill="#fff"/></svg>'};
+  var TONE={miss:['#ef4444','#b91c1c','#ffb3b3'],gap:['#f59e0b','#c26b06','#ffd79a'],month:['#22c55e','#0f8a4f','#a7f3c9'],soon:['#3b82f6','#1d4ed8','#b6d4ff'],goal:['#f5b301','#c27c00','#ffe08a']};
+  var 멈춘={'본인 확인':'본인 확인 후 종료','공지 확인':'공지 확인 후 종료','받아쓰기':'받아쓰기 중 종료','확인 서약':'서약 제출 전 종료'};
+  function showAlert(a){
+    if(a.miss&&a.miss.length){
+      var 여럿=a.miss.length>1;
+      showCard({t:'miss',icon:'warn',tag:'미제출 알림',h:'미제출 <em>'+a.miss.length+'일</em>',
+        rows:a.miss.slice(0,3).map(function(m){ return [mdw(m.date), 멈춘[m.step]||'서약 제출 전 종료', 여럿]; }),
+        act:'오늘은 서약 제출까지'});
+    } else {
+      showCard({t:'gap',icon:'clock',tag:'장기 미확인 알림',big:a.gap+'<small>일간</small>',sub:'안전확인 미실시',
+        rows:[['마지막 제출',mdw(a.lastDone)]],act:'오늘 공지 끝까지 확인'});
+    }
+  }
+  function mdw(d){
+    var p=String(d).split('-'); var w=['일','월','화','수','목','금','토'][new Date(+p[0],+p[1]-1,+p[2]).getDay()];
+    return (+p[1])+'월 '+(+p[2])+'일 ('+w+')';
+  }
+  /** 카드 한 장. 글은 모두 우리가 만든 말과 날짜·숫자뿐이라 그대로 넣습니다. */
+  function showCard(k,done){
+    var c=$('al-c'), T=TONE[k.t]||TONE.miss; c.textContent=''; c.className='alc '+k.t;
+    c.style.setProperty('--a1',T[0]); c.style.setProperty('--a2',T[1]); c.style.setProperty('--a3',T[2]);
+    var h='<div class="top"><div class="ic">'+(ICON[k.icon]||'')+'</div><div class="tag"><i></i>'+k.tag+'</div>';
+    if(k.h) h+='<div class="h">'+k.h+'</div>';
+    if(k.big) h+='<div class="big">'+k.big+'</div>';
+    if(k.sub) h+='<div class="sub">'+k.sub+'</div>';
+    h+='</div>';
+    if(k.rows){ h+='<div class="rows">'; k.rows.forEach(function(x){ h+='<div class="r"><b'+(x[2]?' class="d"':'')+'>'+x[0]+'</b><span>'+x[1]+'</span></div>'; }); h+='</div>'; }
+    h+=k.act?'<div class="act">'+k.act+'</div>':'<div class="gapb"></div>';
+    c.innerHTML=h;
+    if(k.fx==='spark') for(var i=0;i<10;i++){ var sp=el('i','sp'+(i%3?' s':'')); sp.style.left=(8+(i*37)%84)+'%'; sp.style.top=(4+(i*53)%30)+'%'; sp.style.animationDelay=(i*.17)+'s'; c.appendChild(sp); }
+    if(k.fx==='conf'){ var C=['#ffe08a','#ffffff','#7fb3ff','#a7f3c9','#ffb3b3']; for(var j=0;j<22;j++){ var f=el('i','cf'); f.style.left=((j*41)%96)+'%'; f.style.top='0'; f.style.background=C[j%5]; f.style.animationDelay=(-(j*0.13))+'s'; f.style.animationDuration=(2.2+(j%5)*.3)+'s'; c.appendChild(f); } }
+    openCard(c,done);
+  }
+  function openCard(c,done){
+    var bar=el('div','ft'), i=el('i'); bar.appendChild(i); c.appendChild(bar);
+    var hint=el('div','hint'); c.appendChild(hint);
+    var w=$('al'); w.className='al on'; var 남=AL_SEC, t;
+    function 글(){ hint.textContent=남+'초 후 자동 닫기 · 누르면 바로 닫기'; } 글();
+    i.style.transition='none'; i.style.transform='scaleX(1)';
+    requestAnimationFrame(function(){ requestAnimationFrame(function(){ i.style.transition='transform '+AL_SEC+'s linear'; i.style.transform='scaleX(0)'; }); });
+    t=setInterval(function(){ 남--; if(남<=0) 닫기(); else 글(); },1000);
+    function 닫기(){ clearInterval(t); w.onclick=null; w.className='al on off'; setTimeout(function(){ w.className='al'; c.textContent=''; if(done) done(); },300); }
+    w.onclick=닫기;
+  }
+
+  /** 동의는 위에서부터 차례로. 앞 줄을 눌러야 다음 줄이 열립니다. 앞 줄을 풀면 뒤 줄도 같이 풀립니다. */
+  function sgOrder(){
+    var rows=$('g-list').querySelectorAll('.gi'), 열림=true;
+    [].forEach.call(rows,function(lab){
+      var cb=lab.querySelector('.gck');
+      if(!열림 && cb.checked) cb.checked=false;
+      cb.disabled=!열림;
+      lab.className='gi'+(cb.checked?' on':'')+(열림?'':' lock')+(열림&&!cb.checked?' next':'');
+      if(!cb.checked) 열림=false;
+    });
+  }
+  function sgSync(){
+    sgOrder();
+    var L=$('g-list').querySelectorAll('.gck');
+    var n=0; [].forEach.call(L,function(c){ if(c.checked) n++; });
+    S.sg.agreed=n;
+    $('g-tag').textContent=S.sg.need?('동의 '+n+' / '+S.sg.need):'';
+
+    var 이름=nmv($('v-name').value);
+    var 서명=(이름===nmv(S.name||'')) && flatw($('v-word').value)==='서약';
+    $('g-vow').className='gvow'+(서명?' ok':'');
+
+    clearTimeout(S.sgT);
+    S.sgT=setTimeout(function(){ mark('확인 서약', sofar()); },1500);
+
+    var 다됨 = !S.sg.on || (n>=S.sg.need && 서명);
+    signBtn(!다됨,'서약하고 제출', 다됨?'위 내용을 모두 확인했습니다':sgWhy());
+    if(다됨) hideErr('sign-err');
+  }
+  function sgWhy(){
+    if(S.sg.agreed<S.sg.need) return '동의 항목을 모두 체크해 주세요';
+    // 어디가 틀렸는지 집어 줍니다. 그냥 '채워 주세요' 만 뜨면
+    // 다 채운 분은 왜 안 되는지 알 길이 없습니다.
+    var 이름=nmv($('v-name').value);
+    if(!이름) return '서약란에 이름을 적어 주세요';
+    if(이름!==nmv(S.name||'')) return '이름이 본인과 다릅니다 — 「'+(S.name||'')+'」';
+    if(!flatw($('v-word').value)) return '서약란에 「서약」 을 적어 주세요';
+    return '「서약」 두 글자를 정확히 적어 주세요';
+  }
+  function flatw(v){ return String(v==null?'':v).replace(/\s+/g,''); }
+  function nmv(v){ return String(v==null?'':v).trim().replace(/\s+/g,' '); }
+  function digv(v){ return String(v==null?'':v).replace(/\D/g,''); }
+
+  /* ── 자판이 올라왔을 때 ──
+     폰에서 받아쓰기를 하면 자판이 화면의 절반을 먹습니다.
+     그러면 브라우저가 치는 칸만 보이게 밀어 올려서, 정작 보고 쳐야 할
+     문장이 화면 위로 사라집니다. 아이폰에서는 머리글을 붙여 둬도 같이 밀립니다.
+     그래서 화면이 줄어든 것을 알아채고 문장이 맨 위에 오도록 맞춰 드립니다. */
+  function 문장위로(){
+    var w=$('sentwrap');
+    if(!w || $('step-dict').style.display==='none') return;
+    var vv=window.visualViewport;
+    // 한 가지 코드로 두 폰을 다 덮습니다.
+    // 삼성은 창 자체가 줄어들어 offsetTop 이 0 이고, 아이폰은 창이 아래로
+    // 밀려 offsetTop 이 생깁니다. 그 몫을 빼면 어느 쪽이든 같은 자리에 옵니다.
+    var 위=vv?vv.offsetTop:0;
+    var y=w.getBoundingClientRect().top
+          +(window.pageYOffset||document.documentElement.scrollTop)-위-24;
+    // 보이는 창이 아래로 밀렸는데 페이지는 이미 맨 위라면, 더 끌어올릴 데가
+    // 없어 문장이 창 위에 갇힙니다. 그만큼 위에 자리를 만들어 내려 줍니다.
+    var 모자람=Math.max(0, Math.round(-y));
+    document.body.style.paddingTop = 모자람 ? 모자람+'px' : '';
+    window.scrollTo(0, Math.max(0, Math.round(y)));
+  }
+  /** 문장이 지금 눈에 보이는 범위 안에 통째로 들어와 있는지. */
+  function 문장보이나(){
+    var w=$('sentwrap'); if(!w) return true;
+    var vv=window.visualViewport;
+    var r=w.getBoundingClientRect();
+    var 위=vv?vv.offsetTop:0, 밑=위+(vv?vv.height:window.innerHeight);
+    return r.top>=위-2 && r.bottom<=밑+2;
+  }
+  /** 안 보일 때만 끌어올립니다. 보이는데 건드리면 화면이 튑니다.
+   *  다만 카톡 안쪽 브라우저처럼 창 크기를 제대로 안 알려 주는 곳이 있어서,
+   *  '보인다' 고 나와도 문장이 화면 중턱 아래로 내려가 있으면 올려 둡니다.
+   *  그래야 창 정보를 못 믿는 곳에서도 문장이 늘 윗자리에 있습니다. */
+  function 문장챙기기(){
+    var w=$('sentwrap');
+    if(!w || $('step-dict').style.display==='none') return;
+    if(!문장보이나()){ 문장위로(); return; }
+    var vv=window.visualViewport;
+    var 위=vv?vv.offsetTop:0, 높이=vv?vv.height:window.innerHeight;
+    if(w.getBoundingClientRect().top > 위 + 높이*0.4) 문장위로();
+  }
+  function 자판보기(){
+    var 칸=$('d-input'), vv=window.visualViewport;
+    // 자판을 닫았다 다시 열면 focus 가 다시 일어나지 않습니다.
+    // 그래서 칸을 건드리는 모든 경우에 한 번씩 살펴봅니다.
+    ['focus','click','touchend','input','keyup'].forEach(function(e){
+      칸.addEventListener(e,function(){
+        [60,260,520].forEach(function(t){ setTimeout(문장챙기기,t); });
+      });
+    });
+    if(!vv){
+      // 보이는 창을 안 알려 주는 브라우저에서도, 창이 바뀌면 한 번 살핍니다.
+      window.addEventListener('resize',function(){
+        [80,300,600].forEach(function(t){ setTimeout(문장챙기기,t); });
+      });
+      return;
+    }
+    // 자판이 올라왔는지 보는 잣대 : 지금까지 본 가장 큰 높이와 견줍니다.
+    // 삼성은 innerHeight 가 그대로라 둘을 견주면 알 수 있지만,
+    // 아이폰은 innerHeight 도 같이 줄어 못 알아챕니다.
+    // '가장 컸던 높이' 를 기억해 두면 두 폰 모두에서 같게 맞습니다.
+    var 최대=0;
+    function 맞춤(){
+      최대=Math.max(최대, vv.height, window.innerHeight||0);
+      var 올라옴=(최대-vv.height)>110;
+      document.body.classList[올라옴?'add':'remove']('kb');
+      // 남는 자리가 아주 좁으면(카톡 안쪽 브라우저 + 자판) 한 번 더 줄입니다.
+      document.body.classList[(올라옴 && vv.height<300)?'add':'remove']('tight');
+      if(!올라옴) document.body.style.paddingTop='';   // 자판 내려가면 자리도 되돌립니다
+      [80,280,560].forEach(function(t){ setTimeout(문장챙기기,t); });
+    }
+    vv.addEventListener('resize',맞춤);
+    vv.addEventListener('scroll',function(){ setTimeout(문장챙기기,120); });
+    // 구글 안내 띠를 ✕ 로 닫으면 화면이 갑자기 넓어집니다. 받아쓰기 도중에
+    // 닫는 분도 계십니다. 창 크기가 바뀌는 경우는 모두 다시 맞춥니다.
+    window.addEventListener('resize',맞춤);
+    window.addEventListener('orientationchange',function(){ setTimeout(맞춤,300); });
+    맞춤();
+  }
+
+  function signBtn(on, t1, t2){
+    // 마지막 제출 단추만 눈에 띄게 둡니다. 1장은 그냥 '다음' 이라 담백하게.
+    var b0=$('btn-sign');
+    b0.className='btn'+((S.sg&&S.sg.page===1)?' gnext':' tncbtn');
+    var b=$('btn-sign');
+    b.disabled=!!on; b.textContent='';
+    b.appendChild(el('span','t1',t1));
+    if(t2) b.appendChild(el('span','t2',t2));
+  }
+  function doSign(){
+    if(S.busy) return;
+    S.busy=true; signBtn(true,'보내는 중...','잠시만 기다려 주세요');
+    var pjt=S.pjt||get('basepjt')||'';
+    var sg=S.sg||{};
+    var payload={name:S.name,code:S.code,pjt:pjt,device:S.device,readSec:S.readSec,
+                 typed:S.typed,typeSec:S.typeSec,clean:S.clean||0,fix:S.fix||0,
+                 agreed:sg.agreed||0,
+                 signName:$('v-name').value, signWord:$('v-word').value};
+    google.script.run.withSuccessHandler(afterSubmit)
+      .withFailureHandler(function(){ S.busy=false; signBtn(false,'서약하고 제출','다시 눌러 주세요');
+        fail('sign-err','연결이 원활하지 않습니다. 다시 눌러 주세요.'); })
+      .submitEntry(payload);
+  }
+  function afterSubmit(r){
+    S.busy=false; signBtn(false,'서약하고 제출','위 내용을 모두 확인했습니다');
+    if(!r||!r.ok){
+      if(r&&r.gate&&!r.gate.open){ shut(r.gate); return; }
+      // 이미 내신 경우에는 오류가 아니라 낸 기록을 보여 드립니다.
+      if(r&&r.already&&r.done){ afterSubmit(Object.assign({ok:true,already:true},r.done)); return; }
+      fail('sign-err',(r&&r.message)||'저장하지 못했습니다. 다시 시도해 주세요.'); return;
+    }
+    guard(false);              // 제출이 끝났으니 나가셔도 됩니다
+    safeMilestone();           // 양품확보 축하는 다 마친 뒤에 띄웁니다
+    step(5); show('step-done');
+    $('done-h').textContent=r.already?'오늘은 이미 제출하셨습니다':'확인 완료';
+    $('done-sub').textContent=r.already?'아래 내용으로 기록되어 있습니다.':'오늘 안전확인이 기록되었습니다.';
+    $('r-date').textContent=fmtDate(r.date);
+    $('r-who').textContent=(r.vendor?r.vendor+' · ':'')+r.name;
+    $('r-pjt').textContent=r.pjt;
+    $('r-time').textContent=hm(r.enter)+' \u2192 '+hm(r.time);
+    // 참여 현황은 제출과 떼어 두었습니다. 완료 화면을 먼저 띄우고 채웁니다.
+    if(!r.stat && S.name && S.code){
+      $('cal').style.display=''; $('cal-t').textContent='';
+      $('cal-s').textContent='불러오는 중...'; $('cal-g').textContent='';
+      google.script.run.withSuccessHandler(function(x){
+          if(x&&x.ok) paintStat(x.stat); else $('cal').style.display='none';
+        }).withFailureHandler(function(){ $('cal').style.display='none'; })
+        .myStats(S.name,S.code);
+    } else paintStat(r.stat);
+  }
+  /* 이번 달 달력을 그립니다.
+     글로 '10월 중 4일' 이라고 적는 것보다 달력에 색을 칠하는 쪽이
+     한눈에 읽힙니다. 어느 날 빠졌는지도 바로 보입니다. */
+  function paintStat(st){
+    st=st||{};
+    var 날=st.dates||[], 오늘글=String(st.today||'');
+    var m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(오늘글);
+    if(!m){ $('cal').style.display='none'; return; }
+    var 해=+m[1], 달=+m[2], 오늘=+m[3];
+    $('cal').style.display='';
+    $('cal-t').textContent=달+'월';
+    $('cal-s').textContent = 날.length ? 날.length+'일 확인' : '오늘이 첫 확인입니다';
+    // 숫자로 만든 날짜라 시간대에 휘둘리지 않습니다.
+    var 첫요일=new Date(해,달-1,1).getDay(), 끝날=new Date(해,달,0).getDate();
+    var 한날={}; 날.forEach(function(d){ 한날[d]=1; });
+    var g=$('cal-g'); g.textContent='';
+    for(var i=0;i<첫요일;i++) g.appendChild(el('span','cd pad',''));
+    var 초록=0;
+    for(var d=1;d<=끝날;d++){
+      var c='cd';
+      if(한날[d]) c+=' on';
+      else if(d>오늘) c+=' soon';
+      if(d===오늘) c+=' now'; else if(한날[d]) 초록++;
+      g.appendChild(el('span',c,d));
+    }
+    // 초록 칸이 하나도 없는 날(첫 확인)에는 '확인한 날' 범례가 가리킬 데가 없습니다.
+    $('lg-on').style.display = 초록 ? '' : 'none';
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+
+  // 시:분만 뽑습니다. 서버가 '08:07' 로 주든 '2026-10-20 08:07:00' 으로 주든 같게 나옵니다.
+  function hm(v){
+    var m=/(\d{1,2}):(\d{2})/.exec(String(v==null?'':v));
+    return m?('0'+m[1]).slice(-2)+':'+m[2]:'';
+  }
+  function lock(b,on,t){ b.disabled=on; if(t) b.textContent=t; }
+  function fail(id,m){ var e=$(id); e.textContent=m; e.className='err on'; }
+  function hideErr(id){ $(id).className='err'; }
+
+  /** 무사고 기록판. 날짜 계산은 서버가 끝내 놓고, 여기서는 받은 숫자만 그립니다. */
+  function paintSafe(sf){
+    S.safeOn=!!(sf&&sf.on);
+    paintSafeBar(sf);
+    if(!S.safeOn) return;
+    $('sf-day').textContent=sf.day;
+    var left=$('sf-left'), foot=$('sf-foot');
+    left.textContent=''; foot.textContent='';
+    if(sf.total){
+      if(sf.done)            left.textContent='목표 달성';
+      else if(sf.left===1)   left.textContent='목표까지 하루';
+      else                   left.textContent='목표까지 '+sf.left+'일';
+      // 막대는 그린 뒤에 늘려야 차오르는 것이 보입니다.
+      setTimeout(function(){ $('sf-fill').style.width=(sf.pct||0).toFixed(1)+'%'; },80);
+      foot.appendChild(el('b','',dash(sf.start)));
+      foot.appendChild(document.createTextNode(' 시작 · 목표 '));
+      foot.appendChild(el('b','',dash(sf.goal)));
+      if(sf.goalName) foot.appendChild(document.createTextNode(' '+sf.goalName));
+      foot.appendChild(document.createTextNode(' ('+sf.total+'일)'));
+    } else {
+      left.textContent='오늘도 이어 갑니다';
+      $('sf-fill').style.width='100%';
+      foot.appendChild(el('b','',dash(sf.start)));
+      foot.appendChild(document.createTextNode(' 부터 이어 오고 있습니다'));
+    }
+  }
+
+  /** 단계 줄에 붙는 한 줄짜리 무사고 띠. 공지 확인부터 끝까지 계속 보입니다. */
+  function paintSafeBar(sf){
+    var bar=$('sfline');
+    if(!sf||!sf.on){ bar.className='sfline'; return; }
+    bar.className='sfline on';
+    $('sb-day').textContent=sf.day+'일차';
+    $('sb-from').textContent=dash(sf.start)+' 시작';
+    var dd=$('sb-dd');
+    if(!sf.total)            dd.textContent='';
+    else if(sf.left>0)       dd.textContent='D-'+sf.left;
+    else if(sf.left===0)     dd.textContent='D-DAY';
+    else                     dd.textContent='목표 달성';
+    dd.style.display=dd.textContent?'inline-block':'none';
+  }
+  /** 2026-10-08 → 26.10.08 (좁은 화면에서 줄이 안 넘어가게) */
+  function dash(d){
+    var p=String(d||'').split('-');
+    return p.length===3?(p[0].slice(2)+'.'+p[1]+'.'+p[2]):String(d||'');
+  }
+
+  function start(boot){
+    $('loading').style.display='none';
+    paintSafe(boot&&boot.safe); S.sf=boot&&boot.safe;
+    if(!boot||!boot.ok){
+      if(boot&&boot.gate&&!boot.gate.open){ shut(boot.gate); return; }
+      $('loaderr-m').textContent=(boot&&boot.message)||'공지를 불러오지 못했습니다.';
+      $('loaderr').style.display='flex'; return;
+    }
+    S.boot=boot; S.device=devId();
+    if(boot.gate&&!boot.gate.open){ shut(boot.gate); return; }
+    $('n-title').textContent=boot.title||'오늘 안전 공지';
+    $('n-date').textContent=fmtDate(boot.date);
+    if(boot.isToday===false) $('stale').style.display='flex';
+    renderBody(boot.body);
+    paintWhen(boot.gate);
+    // 여기서부터 확인 완료 전까지는 뒤로 가기를 막습니다.
+    // 중간에 빠져나가면 처음부터 다시 하셔야 하기 때문입니다.
+    guard(true);
+    // 매일 이름과 생년월일을 다시 칩니다. 건너뛰지 않습니다.
+    // 생년월일은 매일 다시 칩니다. 이름은 이 폰에서 맞게 들어온 적이 있으면 기억해 둡니다.
+    step(1); show('step-id');
+    $('q-name').value=''; $('q-code').value='';
+    var 기억=get('name');
+    if(기억){ pickName(기억); 기억표시(); }
+    else $('q-name').focus();
+  }
+  function 기억표시(){
+    $('name-hint').textContent='지난번 이름을 기억해 두었습니다. 생년월일만 입력하세요.';
+    $('not-me').style.display='inline-block';
+  }
+  function notMe(){
+    put('name','');
+    S.name=''; $('q-name').value=''; $('q-code').value='';
+    $('not-me').style.display='none';
+    $('code-field').style.display='none'; $('btn-ok').style.display='none';
+    $('picks').textContent=''; hideErr('id-err');
+    $('name-hint').textContent='두 글자만 입력하셔도 찾아 드립니다';
+    $('q-name').focus();
+  }
+
+  /** 첫 화면에 오늘 언제부터 언제까지 할 수 있는지 적어 둡니다. */
+  function paintWhen(g){
+    g=g||{};
+    var from=g.from||'', to=g.to||'';
+    var box=$('when'); box.textContent='';
+    var clk=el('div','clk'), cv=el('div','cv','--:--:--');
+    clk.appendChild(cv); clk.appendChild(el('div','cl','지금 시각'));
+    box.appendChild(clk);
+    var tx=el('div','tx'), t1=el('div','t1');
+    // 닫는 시각을 따로 두지 않았다면 굳이 알리지 않습니다.
+    // '자정까지' 라고 적어 두면 미뤄도 된다는 뜻으로 읽힙니다.
+    if(from && to){
+      t1.appendChild(document.createTextNode('오늘 '));
+      t1.appendChild(el('b','',from));
+      t1.appendChild(document.createTextNode(' ~ '));
+      t1.appendChild(el('b','',to));
+      t1.appendChild(document.createTextNode('까지'));
+    } else if(from){
+      t1.appendChild(document.createTextNode('오늘 '));
+      t1.appendChild(el('b','',from));
+      t1.appendChild(document.createTextNode(' 부터'));
+    } else {
+      t1.textContent='오늘 안전확인';
+    }
+    tx.appendChild(t1);
+    tx.appendChild(el('div','t2', from && to
+      ? '이 시간 안에 작성해 주세요.'
+      : '출근하시면 작업 시작 전에 작성해 주세요.'));
+    box.appendChild(tx);
+    startClock(cv, g.nows||g.now||'');
+  }
+
+  /**
+   * 서버가 알려 준 시각에서 이어서 1초씩 갑니다.
+   * 기기 시계를 그냥 쓰면, 휴대폰 시각이 틀어진 사람은 열렸는데 안 열렸다고 오해합니다.
+   */
+  function startClock(node, serverTime){
+    clearInterval(S.clock);
+    var p=String(serverTime).split(':');
+    var base=(+p[0]||0)*3600+(+p[1]||0)*60+(+p[2]||0);
+    var at=Date.now();
+    function two(n){ return (n<10?'0':'')+n; }
+    function draw(){
+      var t=(base+Math.floor((Date.now()-at)/1000))%86400;
+      node.textContent=two(Math.floor(t/3600))+':'+two(Math.floor(t/60)%60)+':'+two(t%60);
+    }
+    draw(); S.clock=setInterval(draw,1000);
+  }
+
+  $('q-name').addEventListener('input',onName);
+  $('q-code').addEventListener('keydown',function(e){ if(e.key==='Enter') doVerify(); });
+  $('btn-ok').addEventListener('click',doVerify);
+  $('not-me').addEventListener('click',notMe);
+  // 그냥 goDict 를 넘기면 클릭 이벤트가 첫 인자(이어서) 자리로 들어가
+  // 처음 들어온 분도 '이어서 하는 중' 으로 오해합니다. 감싸서 넘깁니다.
+  $('btn-read').addEventListener('click',function(){ goDict(false); });
+  $('d-input').addEventListener('input',onType);
+  ['paste','drop'].forEach(function(ev){
+    $('d-input').addEventListener(ev,function(e){ e.preventDefault(); $('d-left').textContent='붙여넣기는 사용할 수 없습니다'; });
+  });
+  $('btn-dict').addEventListener('click',nextSent);
+  $('btn-sign').addEventListener('click',doSign);
+
+  자판보기();
+
+  // 이 화면은 Apps Script 웹 앱에서만 동작합니다.
+  if(!(window.google && google.script && google.script.run)){
+    $('loading').style.display='none';
+    $('loaderr-m').textContent='Apps Script 웹 앱 주소로 열어 주세요.';
+    $('loaderr').style.display='flex';
+  } else {
+    google.script.run.withSuccessHandler(start).withFailureHandler(function(){ start(null); }).getBoot();
+  }
+})();
+</script>
+
+</body>
+</html>
