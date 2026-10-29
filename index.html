@@ -3,9 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!-- 보안 : 이 페이지는 우리 파일과 구글 안전확인 화면만 열 수 있습니다 -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; manifest-src 'self'; worker-src 'self'; frame-src https://script.google.com https://*.googleusercontent.com https://accounts.google.com; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="no-referrer">
 <title>일일 안전확인</title>
 <meta name="description" content="OSF Solution 일일 안전확인">
-<meta name="theme-color" content="#0c1a3d">
+<meta name="theme-color" content="#050b1a" id="tc">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="안전확인">
@@ -13,56 +16,120 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="favicon.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preload" as="image" href="logo-white.png">
 <style>
-  html,body{margin:0;height:100%;background:#0c1a3d;overflow:hidden}
+  html,body{margin:0;height:100%;background:#050b1a;overflow:hidden}
   /* 안전확인 화면을 꽉 채워 띄웁니다 */
-  #app{position:fixed;inset:0;width:100%;height:100%;border:0;background:#0d1117}
-  /* 처음 1초 로고 화면 */
-  #splash{position:fixed;inset:0;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;
-    background:linear-gradient(160deg,#22407f 0%,#152b5c 50%,#0c1a3d 100%);
-    font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Noto Sans KR','Malgun Gothic',sans-serif;
-    transition:opacity .45s ease}
-  #splash:before{content:'';position:absolute;inset:0;background:radial-gradient(70% 40% at 25% 12%,rgba(120,180,255,.25),transparent 70%)}
-  #splash.out{opacity:0;pointer-events:none}
-  #splash img{position:relative;width:min(46vw,190px);animation:pop .7s cubic-bezier(.2,1.3,.35,1) both}
-  #splash .t{position:relative;margin-top:22px;color:#fff;font-size:21px;font-weight:700;letter-spacing:1px;animation:up .6s .15s ease-out both}
-  #splash .b{position:absolute;bottom:calc(36px + env(safe-area-inset-bottom,0px));color:#6f93c6;font-size:11px;letter-spacing:5px;font-weight:600}
-  #splash .bar{position:relative;margin-top:26px;width:120px;height:3px;border-radius:3px;background:rgba(255,255,255,.15);overflow:hidden}
-  #splash .bar i{position:absolute;top:0;bottom:0;width:40%;background:#7fb3ff;border-radius:3px;animation:load 1.1s ease-in-out infinite}
-  #fail{display:none;position:relative;margin-top:22px;text-align:center;color:#dbe6f5;font-size:15px;line-height:1.6}
+  #app{position:fixed;inset:0;width:100%;height:100%;border:0;background:#0a1326}
+  /* 처음 로고 화면 (약 4초)
+     0.1초  가운데가 푸르게 밝아지고 빛줄기가 사방에서 모임
+     0.7초  로고가 흐릿하고 크게 들어와 또렷하게 자리 잡음
+     2.3초  로고에 한 번 빛이 스침
+     2.5초  가로줄, 2.7초 「일일 안전확인」, 3.0초 OSF SOLUTION
+     4.0초  바탕이 걷히고 로고가 워터마크 자리로 천천히 내려앉음 (약 1.6초) */
+  #splash{position:fixed;inset:0;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;
+    background:#050b1a;font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Noto Sans KR','Malgun Gothic',sans-serif;
+    transition:background-color 1s ease;-webkit-user-select:none;user-select:none}
+  /* 끝 : 바탕은 걷히고 로고는 작게 옅어지며 안전확인 화면의 워터마크 자리로 내려앉습니다 */
+  #splash.out{background-color:rgba(5,11,26,0);pointer-events:none}
+  #splash .glow{position:absolute;left:50%;top:46%;width:150vmax;height:150vmax;margin:-75vmax 0 0 -75vmax;border-radius:50%;
+    background:radial-gradient(circle,rgba(47,111,208,.55) 0%,rgba(27,52,112,.35) 18%,rgba(5,11,26,0) 42%);opacity:0;animation:glow 3s ease-out .1s forwards}
+  #splash .beams{position:absolute;left:50%;top:46%;width:0;height:0}
+  #splash .beams i{position:absolute;left:0;top:-1.5px;height:3px;width:52vmax;transform-origin:0 50%;opacity:0;
+    background:linear-gradient(90deg,rgba(120,180,255,0),rgba(150,200,255,.95) 65%,#fff);filter:blur(.6px) drop-shadow(0 0 6px rgba(120,180,255,.9));
+    animation:beam 1.6s cubic-bezier(.6,0,.2,1) forwards}
+  #splash .logo{position:relative;width:min(48vw,200px);aspect-ratio:600/356;opacity:0;animation:logo 1.8s cubic-bezier(.2,.9,.25,1) .7s forwards}
+  #splash .logo img{display:block;width:100%;height:100%;-webkit-user-drag:none;animation:shine 1s ease-in-out 2.3s both}
+  #splash .line{position:relative;margin-top:24px;width:0;height:1px;background:linear-gradient(90deg,transparent,#7fb3ff,transparent);animation:line .8s ease-out 2.5s forwards}
+  #splash .t{position:relative;margin-top:16px;color:#fff;font-size:21px;font-weight:700;letter-spacing:8px;padding-left:8px;opacity:0;animation:tx .8s ease-out 2.7s forwards}
+  #splash .b{position:absolute;bottom:calc(36px + env(safe-area-inset-bottom,0px));color:#fff;font-size:11px;letter-spacing:5px;padding-left:5px;font-weight:600;opacity:0;animation:tx .7s ease-out 3s forwards}
+  /* 불러오기 줄 : 4초가 지나도 화면이 준비 안 됐을 때만 보입니다 */
+  #splash .bar{position:relative;margin-top:26px;width:110px;height:2px;border-radius:2px;background:rgba(255,255,255,.12);overflow:hidden;opacity:0;animation:tx .5s ease-out 4.2s forwards}
+  #splash .bar i{position:absolute;top:0;bottom:0;width:40%;background:#7fb3ff;border-radius:2px;animation:load 1.1s ease-in-out infinite}
+  @keyframes glow{0%{opacity:0;transform:scale(.4)}45%{opacity:1}100%{opacity:.75;transform:scale(1)}}
+  @keyframes beam{0%{opacity:0;transform:rotate(var(--r)) translateX(48vmax) scaleX(.2)}35%{opacity:1}100%{opacity:0;transform:rotate(var(--r)) translateX(0) scaleX(1)}}
+  @keyframes logo{0%{opacity:0;transform:scale(2.6);filter:blur(18px) brightness(2.4)}55%{opacity:1;filter:blur(0) brightness(1.6)}100%{opacity:1;transform:scale(1);filter:none}}
+  @keyframes shine{0%,100%{filter:none}45%{filter:brightness(1.7) drop-shadow(0 0 18px rgba(127,179,255,.9))}}
+  @keyframes line{to{width:160px}}
+  @keyframes tx{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  @keyframes load{0%{left:-40%}100%{left:100%}}
+  /* 움직임 줄이기를 켠 폰 : 빛줄기 없이 로고와 글자만 조용히 나타남 */
+  @media(prefers-reduced-motion:reduce){
+    #splash .beams,#splash .glow{display:none}
+    #splash .logo,#splash .line,#splash .t,#splash .b,#splash .logo img{animation-duration:.01s!important;animation-delay:0s!important}
+    #splash .line{width:160px}
+  }
+  #fail{display:none;position:relative;margin-top:22px;text-align:center;color:#fff;font-size:15px;line-height:1.6}
   #fail button,#fail a{display:inline-block;margin:12px 4px 0;padding:11px 18px;border-radius:12px;border:0;font-size:15px;font-weight:700;text-decoration:none;cursor:pointer}
   #fail button{background:#fff;color:#152b5c}#fail a{background:rgba(255,255,255,.14);color:#fff}
-  @keyframes pop{from{transform:scale(.7);opacity:0}to{transform:none;opacity:1}}
-  @keyframes up{from{transform:translateY(8px);opacity:0}to{transform:none;opacity:1}}
-  @keyframes load{0%{left:-40%}100%{left:100%}}
 </style>
 </head>
 <body>
 <div id="splash" role="status" aria-live="polite">
-  <img src="logo-white.png" alt="OSF">
+  <div class="glow"></div><div class="beams" id="beams"></div>
+  <div class="logo"><img src="logo-white.png" alt="OSF" width="600" height="356" decoding="sync" draggable="false"></div>
+  <div class="line"></div>
   <div class="t">일일 안전확인</div>
   <div class="bar" id="bar"><i></i></div>
   <div id="fail">연결이 늦어지고 있습니다.<br>
-    <button type="button" id="retry">다시 시도</button><a id="direct" target="_top">브라우저로 열기</a></div>
+    <button type="button" id="retry">다시 시도</button><a id="direct" target="_top" rel="noopener">브라우저로 열기</a></div>
   <div class="b">OSF SOLUTION</div>
 </div>
-<iframe id="app" title="일일 안전확인" allow="clipboard-write"></iframe>
+<iframe id="app" title="일일 안전확인" allow="clipboard-write" referrerpolicy="no-referrer"></iframe>
 <script>
 (function(){
   // 안전확인 웹 앱 주소. 배포 주소가 바뀌면 이 한 줄만 고치면 됩니다.
   var APP = 'https://script.google.com/macros/s/AKfycbxgioTbd5RmjUKZzXljEFD5HaTg-gu353soMZmAjMdoZnApTHG8jl5XtZ_gG5W5tJ4/exec';
+  var SHOW = 4000;                      // 로고를 보여 주는 시간 (1000 = 1초)
   var f = document.getElementById('app'), s = document.getElementById('splash');
   var t0 = Date.now(), done = false, slow;
+  // 다른 사이트가 이 페이지를 몰래 감싸 띄우지 못하게 합니다
+  if (window.top !== window.self) { try { window.top.location = location.href; } catch (e) {} }
+  // 빛줄기 : 사방에서 가운데로 모입니다
+  (function(){ var B=document.getElementById('beams'), n=18;
+    for (var i=0;i<n;i++){ var e=document.createElement('i'); e.style.setProperty('--r',(i*360/n+(i%2?7:0))+'deg');
+      e.style.animationDelay=(0.05+Math.random()*0.5).toFixed(2)+'s'; B.appendChild(e); } })();
   document.getElementById('direct').href = APP;
   function hide(){
     if (done) return; done = true; clearTimeout(slow);
-    // 로고는 최소 0.9초 보여 줍니다. 너무 빨리 사라지면 깜빡이는 것처럼 보입니다.
-    setTimeout(function(){ s.className = 'out'; }, Math.max(0, 900 - (Date.now() - t0)));
+    // 화면이 먼저 준비돼도 로고 연출은 끝까지 보여 줍니다
+    setTimeout(land, Math.max(0, SHOW - (Date.now() - t0)));
   }
+  // 로고가 안전확인 화면 워터마크와 같은 자리, 같은 크기, 같은 옅기로 내려앉습니다
+  // (워터마크 : 가운데, 위에서 58%, 화면 폭 62% 최대 260px, 옅기 6%)
+  function land(){
+    var L = s.querySelector('.logo'), r = L.getBoundingClientRect(), T = 1600;
+    var w = Math.min(innerWidth * 0.62, 260);
+    var dx = innerWidth / 2 - (r.left + r.width / 2), dy = innerHeight * 0.58 - (r.top + r.height / 2);
+    var to = 'translate(' + dx + 'px,' + dy + 'px) scale(' + (w / r.width) + ')';
+    [].forEach.call(s.querySelectorAll('.glow,.line,.t,.b,.bar,.logo,.logo img'), function(e){
+      var o = getComputedStyle(e).opacity; e.style.animation = 'none'; e.style.opacity = o; });
+    void s.offsetWidth;                      // 지금 모습에서 이어서 움직이도록
+    // 글자와 줄은 먼저 조용히 빠지고, 뒤의 푸른 빛은 로고와 함께 천천히 꺼집니다
+    [].forEach.call(s.querySelectorAll('.line,.t,.b,.bar'), function(e){
+      e.style.transition = 'opacity .6s ease'; e.style.opacity = 0; });
+    var G = s.querySelector('.glow'); G.style.transition = 'opacity ' + T + 'ms ease-in-out'; G.style.opacity = 0;
+    // 로고 : 자리를 옮기는 동안 진하기가 고르게 천천히 빠집니다.
+    // 밑에 안전확인 화면의 워터마크(6%)가 이미 깔려 있어서, 로고는 끝에 0 까지 사라지고
+    // 둘을 겹쳐 본 진하기가 100% → 82% → 50% → 22% → 6% 로 고르게 이어지게 맞췄습니다.
+    L.style.transform = to; L.style.opacity = 0;
+    if (L.animate) {
+      L.animate([{transform: 'none'}, {transform: to}], {duration: T, easing: 'cubic-bezier(.45,0,.2,1)'});
+      L.animate([{opacity: 1}, {opacity: .81, offset: .25}, {opacity: .47, offset: .55}, {opacity: .17, offset: .8}, {opacity: .05, offset: .92}, {opacity: 0}],
+                {duration: T, easing: 'linear'});
+    } else {
+      L.style.transition = 'transform ' + T + 'ms ease,opacity ' + T + 'ms linear';
+    }
+    s.style.transition = 'background-color ' + (T - 200) + 'ms ease-in-out';
+    s.className = 'out';
+    document.getElementById('tc').content = '#0c1a3d';   // 위쪽 상태바를 앱 머리 색으로
+    setTimeout(function(){ s.style.display = 'none'; }, T + 150);
+  }
+
   function go(){
-    done = false; t0 = Date.now(); s.className = '';
+    done = false; s.className = ''; s.style.display = '';
     document.getElementById('fail').style.display = 'none'; document.getElementById('bar').style.display = '';
-    f.onload = hide; f.src = APP + (APP.indexOf('?') < 0 ? '?' : '&') + 'v=' + t0;
+    f.onload = hide; f.src = APP + (APP.indexOf('?') < 0 ? '?' : '&') + 'v=' + Date.now();
     clearTimeout(slow);
     slow = setTimeout(function(){              // 15초가 넘으면 다시 시도 버튼
       if (done) return;
@@ -70,7 +137,7 @@
       document.getElementById('fail').style.display = 'block';
     }, 15000);
   }
-  document.getElementById('retry').onclick = go;
+  document.getElementById('retry').onclick = function(){ t0 = Date.now() - SHOW; go(); };
   go();
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(function(){});
 })();
