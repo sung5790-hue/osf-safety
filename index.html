@@ -18,9 +18,16 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preload" as="image" href="logo-white.png">
 <style>
-  html,body{margin:0;height:100%;background:#050b1a;overflow:hidden}
+  html,body{margin:0;height:100%;background:#0a1326;overflow:hidden}
+  /* 폰마다 맨 위 시계 줄, 맨 아래 버튼·제스처 줄이 화면 위에 겹칠 수 있습니다(아이폰, 최신 안드로이드).
+     폰이 알려 주는 그 높이(safe-area)만큼 안전확인 화면을 비켜 놓습니다. 겹치지 않는 폰은 0 이라 그대로입니다.
+     맨 위 시계 줄 자리는 앱 머리줄과 같은 남색으로 채웁니다 */
+  #topbar{position:fixed;left:0;right:0;top:0;height:env(safe-area-inset-top,0px);background:#0c1a3d;z-index:1}
   /* 안전확인 화면을 꽉 채워 띄웁니다 */
-  #app{position:fixed;inset:0;width:100%;height:100%;border:0;background:#0a1326}
+  #app{position:fixed;border:0;background:#0a1326;
+    top:env(safe-area-inset-top,0px);left:env(safe-area-inset-left,0px);
+    width:calc(100% - env(safe-area-inset-left,0px) - env(safe-area-inset-right,0px));
+    height:calc(100% - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px))}
   /* 처음 로고 화면 (약 4초)
      0.1초  가운데가 푸르게 밝아지고 빛줄기가 사방에서 모임
      0.7초  로고가 흐릿하고 크게 들어와 또렷하게 자리 잡음
@@ -75,6 +82,7 @@
     <button type="button" id="retry">다시 시도</button><a id="direct" target="_top" rel="noopener">브라우저로 열기</a></div>
   <div class="b">OSF SOLUTION</div>
 </div>
+<div id="topbar"></div>
 <iframe id="app" title="일일 안전확인" allow="clipboard-write" referrerpolicy="no-referrer"></iframe>
 <script>
 (function(){
