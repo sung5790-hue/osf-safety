@@ -1,6 +1,6 @@
 // 입구 페이지만 저장해 두는 작은 서비스 워커입니다.
 // 안전확인 화면(구글)은 저장하지 않고 늘 새로 받습니다.
-const CACHE = 'osf-safety-v7';
+const CACHE = 'osf-safety-v8';
 const SHELL = ['./', 'index.html', 'manifest.webmanifest', 'logo-white.png', 'icon-192.png', 'icon-512.png'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
