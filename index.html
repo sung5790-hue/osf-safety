@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>일일 안전확인</title>
+<meta name="description" content="OSF Solution 일일 안전확인">
+<meta name="theme-color" content="#0c1a3d">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="안전확인">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
+  html,body{margin:0;height:100%;background:#0c1a3d;overflow:hidden}
+  /* 안전확인 화면을 꽉 채워 띄웁니다 */
+  #app{position:fixed;inset:0;width:100%;height:100%;border:0;background:#0d1117}
+  /* 처음 1초 로고 화면 */
+  #splash{position:fixed;inset:0;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    background:linear-gradient(160deg,#22407f 0%,#152b5c 50%,#0c1a3d 100%);
+    font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Noto Sans KR','Malgun Gothic',sans-serif;
+    transition:opacity .45s ease}
+  #splash:before{content:'';position:absolute;inset:0;background:radial-gradient(70% 40% at 25% 12%,rgba(120,180,255,.25),transparent 70%)}
+  #splash.out{opacity:0;pointer-events:none}
+  #splash img{position:relative;width:min(46vw,190px);animation:pop .7s cubic-bezier(.2,1.3,.35,1) both}
+  #splash .t{position:relative;margin-top:22px;color:#fff;font-size:21px;font-weight:700;letter-spacing:1px;animation:up .6s .15s ease-out both}
+  #splash .b{position:absolute;bottom:calc(36px + env(safe-area-inset-bottom,0px));color:#6f93c6;font-size:11px;letter-spacing:5px;font-weight:600}
+  #splash .bar{position:relative;margin-top:26px;width:120px;height:3px;border-radius:3px;background:rgba(255,255,255,.15);overflow:hidden}
+  #splash .bar i{position:absolute;top:0;bottom:0;width:40%;background:#7fb3ff;border-radius:3px;animation:load 1.1s ease-in-out infinite}
+  #fail{display:none;position:relative;margin-top:22px;text-align:center;color:#dbe6f5;font-size:15px;line-height:1.6}
+  #fail button,#fail a{display:inline-block;margin:12px 4px 0;padding:11px 18px;border-radius:12px;border:0;font-size:15px;font-weight:700;text-decoration:none;cursor:pointer}
+  #fail button{background:#fff;color:#152b5c}#fail a{background:rgba(255,255,255,.14);color:#fff}
+  @keyframes pop{from{transform:scale(.7);opacity:0}to{transform:none;opacity:1}}
+  @keyframes up{from{transform:translateY(8px);opacity:0}to{transform:none;opacity:1}}
+  @keyframes load{0%{left:-40%}100%{left:100%}}
+</style>
+</head>
+<body>
+<div id="splash" role="status" aria-live="polite">
+  <img src="logo-white.png" alt="OSF">
+  <div class="t">일일 안전확인</div>
+  <div class="bar" id="bar"><i></i></div>
+  <div id="fail">연결이 늦어지고 있습니다.<br>
+    <button type="button" id="retry">다시 시도</button><a id="direct" target="_top">브라우저로 열기</a></div>
+  <div class="b">OSF SOLUTION</div>
+</div>
+<iframe id="app" title="일일 안전확인" allow="clipboard-write"></iframe>
+<script>
+(function(){
+  // 안전확인 웹 앱 주소. 배포 주소가 바뀌면 이 한 줄만 고치면 됩니다.
+  var APP = 'https://script.google.com/macros/s/AKfycbxgioTbd5RmjUKZzXljEFD5HaTg-gu353soMZmAjMdoZnApTHG8jl5XtZ_gG5W5tJ4/exec';
+  var f = document.getElementById('app'), s = document.getElementById('splash');
+  var t0 = Date.now(), done = false, slow;
+  document.getElementById('direct').href = APP;
+  function hide(){
+    if (done) return; done = true; clearTimeout(slow);
+    // 로고는 최소 0.9초 보여 줍니다. 너무 빨리 사라지면 깜빡이는 것처럼 보입니다.
+    setTimeout(function(){ s.className = 'out'; }, Math.max(0, 900 - (Date.now() - t0)));
+  }
+  function go(){
+    done = false; t0 = Date.now(); s.className = '';
+    document.getElementById('fail').style.display = 'none'; document.getElementById('bar').style.display = '';
+    f.onload = hide; f.src = APP + (APP.indexOf('?') < 0 ? '?' : '&') + 'v=' + t0;
+    clearTimeout(slow);
+    slow = setTimeout(function(){              // 15초가 넘으면 다시 시도 버튼
+      if (done) return;
+      document.getElementById('bar').style.display = 'none';
+      document.getElementById('fail').style.display = 'block';
+    }, 15000);
+  }
+  document.getElementById('retry').onclick = go;
+  go();
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(function(){});
+})();
+</script>
+</body>
+</html>
