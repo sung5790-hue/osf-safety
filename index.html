@@ -83,7 +83,7 @@
   <div class="bar" id="bar"><i></i></div>
   <div id="fail">연결이 늦어지고 있습니다.<br>
     <button type="button" id="retry">다시 시도</button><a id="direct" target="_top" rel="noopener">브라우저로 열기</a></div>
-  <div class="b">OSF SOLUTION</div>
+  <div class="b">OSF SOLUTION<small style="display:block;margin-top:6px;font-size:9px;letter-spacing:2px;opacity:.6">v9</small></div>
 </div>
 <div id="topbar"></div>
 <iframe id="app" title="일일 안전확인" allow="clipboard-write" referrerpolicy="no-referrer"></iframe>
@@ -99,7 +99,8 @@
   var f = document.getElementById('app'), s = document.getElementById('splash');
   // 아이폰 홈 화면 앱인데 시계 줄이 화면 위에 겹쳐 있으면(아이콘을 예전에 추가한 경우),
   // 아이폰이 그 바로 아래를 흐리게 덮으므로 안전확인 화면을 32px 더 내립니다.
-  if (navigator.standalone) {
+  // 아이폰을 확인하는 방법이 두 가지(standalone · 기기 이름)라 둘 중 하나만 맞아도 적용합니다
+  if (navigator.standalone || /iPhone|iPad|iPod/.test(navigator.userAgent)) {
     var pr = document.createElement('div');
     pr.style.cssText = 'position:fixed;top:0;height:env(safe-area-inset-top,0px);width:1px;visibility:hidden';
     document.body.appendChild(pr);
