@@ -1,7 +1,7 @@
 // 입구 페이지만 저장해 두는 작은 서비스 워커입니다.
 // 안전확인 화면(구글)은 저장하지 않고 늘 새로 받습니다.
-const CACHE = 'osf-safety-v12';
-const SHELL = ['./', 'index.html', 'manifest.webmanifest', 'admin.webmanifest', 'logo-white.png', 'splash-ko.woff2', 'splash-en.woff2', 'icon-192.png', 'icon-512.png', 'icon-admin-192.png', 'icon-admin-512.png'];
+const CACHE = 'osf-safety-v13';
+const SHELL = ['./', 'index.html', 'manifest.webmanifest', 'admin/', 'admin/admin.webmanifest', 'logo-white.png', 'splash-ko.woff2', 'splash-en.woff2', 'icon-192.png', 'icon-512.png', 'icon-admin-192.png', 'icon-admin-512.png'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
 });

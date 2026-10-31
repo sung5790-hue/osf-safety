@@ -18,14 +18,8 @@
 <link rel="icon" type="image/png" href="favicon.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <script>
-  // 관리자 주소(?admin=1)로 열면 관리자용 설치 정보를 씁니다. 설치한 앱이 관리자 현황으로 바로 열립니다.
-  if (/(?:^|[?&])admin=1(?:&|$)/.test(location.search)) {
-    document.querySelector('link[rel=manifest]').href = 'admin.webmanifest';
-    document.querySelector('meta[name=apple-mobile-web-app-title]').content = '관리자 현황';
-    // 작업자 앱과 헷갈리지 않게 아이콘도 관리자용 (검정 바탕, 금색)
-    document.querySelector('link[rel=icon]').href = 'favicon-admin.png';
-    document.querySelector('link[rel=apple-touch-icon]').href = 'apple-touch-icon-admin.png';
-  }
+  // 예전 관리자 주소(?admin=1)로 들어오면 관리자 전용 주소(admin/)로 보냅니다
+  if (/(?:^|[?&])admin=1(?:&|$)/.test(location.search)) location.replace('admin/');
 </script>
 <link rel="preload" as="image" href="logo-white.png">
 <link rel="preload" as="font" type="font/woff2" href="splash-ko.woff2" crossorigin>
@@ -120,7 +114,7 @@
   <div class="bar" id="bar"><i></i></div>
   <div id="fail">연결이 늦어지고 있습니다.<br>
     <button type="button" id="retry">다시 시도</button><a id="direct" target="_top" rel="noopener">브라우저로 열기</a></div>
-  <div class="b"><span class="pg"><i></i></span>OSF SOLUTION<small style="display:block;margin-top:-4px;font-size:9px;letter-spacing:2px;opacity:.55">v12</small></div>
+  <div class="b"><span class="pg"><i></i></span>OSF SOLUTION<small style="display:block;margin-top:-4px;font-size:9px;letter-spacing:2px;opacity:.55">v13</small></div>
 </div>
 <div id="topbar"></div>
 <iframe id="app" title="일일 안전확인" allow="clipboard-write" referrerpolicy="no-referrer"></iframe>
