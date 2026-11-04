@@ -119,7 +119,7 @@
   <div class="bar" id="bar"><i></i></div>
   <div id="fail">연결이 늦어지고 있습니다.<br>
     <button type="button" id="retry">다시 시도</button><a id="direct" target="_top" rel="noopener">브라우저로 열기</a></div>
-  <div class="b"><span class="pg"><i></i></span>OSF SOLUTION<small style="display:block;margin-top:-4px;font-size:9px;letter-spacing:2px;opacity:.55">v17</small></div>
+  <div class="b"><span class="pg"><i></i></span>OSF SOLUTION<small style="display:block;margin-top:-4px;font-size:9px;letter-spacing:2px;opacity:.55">v18</small></div>
 </div>
 <div id="topbar"></div>
 <iframe id="app" title="일일 안전확인" allow="clipboard-write" referrerpolicy="no-referrer"></iframe>
@@ -163,37 +163,52 @@
     // 화면이 먼저 준비돼도 로고 연출은 끝까지 보여 줍니다
     setTimeout(land, Math.max(0, SHOW - (Date.now() - t0)));
   }
-  // 끝 : 로고는 제자리에서 아주 천천히 옅어지고, 그 뒤를 따라 바탕이 걷히며 안전확인 화면이 나옵니다
+  // 끝 : 스르륵 걷히기 (약 1.8초)
+  //   0.0초  글자 줄(구분선, 일일 안전확인, 관리자, SAFETY FIRST, 아래 OSF SOLUTION)이 살짝 위로 뜨며 먼저 옅어짐
+  //   0.0초  방패와 로고는 제자리에서 아주 조금 커지며 천천히 옅어짐 (끝으로 갈수록 더 천천히)
+  //   0.6초  뒤 금빛과 격자, 검은 바탕이 걷히며 안쪽 로그인 화면이 드러남
+  //   모든 것이 다 옅어진 뒤에 화면에서 뺍니다. 중간에 뚝 꺼지는 것이 없게
   function land(){
-    var L = s.querySelector('.logo'), T = 2200;
-    [].forEach.call(s.querySelectorAll('.glow,.grid,.line,.t,.s,.b,.bar,.logo,.logo img'), function(e){
-      var o = getComputedStyle(e).opacity; e.style.animation = 'none'; e.style.opacity = o; });
+    var T = 1800, RM = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (RM) T = 600;
+    var all = s.querySelectorAll('.glow,.grid,.flash,.logo,.logo img,.line,.t,.adm,.s,.b,.bar');
+    [].forEach.call(all, function(e){ var o = getComputedStyle(e).opacity; e.style.animation = 'none'; e.style.opacity = o; });
+    // 방패 테두리 선은 손대지 않습니다 (멈추면 선이 다시 지워져 보임). 감싼 .lw 와 함께 옅어집니다
     void s.offsetWidth;                      // 지금 모습에서 이어서 움직이도록
-    // 글자와 줄은 먼저 조용히 빠지고, 뒤의 푸른 빛은 로고와 함께 천천히 꺼집니다
-    [].forEach.call(s.querySelectorAll('.grid,.line,.t,.s,.b,.bar'), function(e){
-      e.style.transition = 'opacity .9s ease'; e.style.opacity = 0; });
-    var G = s.querySelector('.glow'); G.style.transition = 'opacity ' + T + 'ms ease-in-out'; G.style.opacity = 0;
-    L.style.transform = 'scale(1.04)'; L.style.opacity = 0;
-    if (L.animate) {
-      L.animate([{transform: 'none'}, {transform: 'scale(1.04)'}], {duration: T, easing: 'cubic-bezier(.3,0,.3,1)'});
+    var ease = 'cubic-bezier(.4,0,.2,1)';
+    [].forEach.call(s.querySelectorAll('.line,.t,.adm,.s,.b,.bar'), function(e, i){
+      var d = Math.round(i * 40);           // 위에서부터 차례로 아주 조금씩 늦게
+      e.style.transition = 'opacity ' + Math.round(T * .42) + 'ms ' + ease + ' ' + d + 'ms,transform ' + Math.round(T * .42) + 'ms ' + ease + ' ' + d + 'ms';
+      e.style.opacity = 0; e.style.transform = 'translateY(-6px)'; });
+    var LW = s.querySelector('.lw');
+    LW.style.opacity = 0; LW.style.transform = 'scale(1.035)';
+    if (LW.animate && !RM) {
       // 눈은 옅은 빛의 변화에 예민해서, 진하기를 똑같은 빠르기로 빼면 끝에 「팍」 꺼져 보입니다.
-      // 진하기를 (1-t)^2.6 으로 빼서 눈에 고르게 줄어들고, 끝으로 갈수록 더 천천히 사라지게 합니다.
+      // 진하기를 (1-t)^2.4 로 빼서 눈에 고르게 줄어들고, 끝으로 갈수록 더 천천히 사라지게 합니다.
       var K = [];
-      for (var i = 0; i <= 20; i++) K.push({opacity: Math.pow(1 - i / 20, 2.6), offset: i / 20});
-      L.animate(K, {duration: T, easing: 'linear'});
+      for (var i = 0; i <= 24; i++) { var t = i / 24; K.push({opacity: Math.pow(1 - t, 2.4), transform: 'scale(' + (1 + .035 * (1 - Math.pow(1 - t, 2))).toFixed(4) + ')', offset: t}); }
+      LW.animate(K, {duration: T, easing: 'linear'});
     } else {
-      L.style.transition = 'transform ' + T + 'ms ease,opacity ' + T + 'ms linear';
+      LW.style.transition = 'opacity ' + T + 'ms ease,transform ' + T + 'ms ease';
     }
-    // 바탕은 로고가 절반쯤 옅어진 뒤부터 천천히 걷힙니다
-    s.style.transition = 'background-color ' + Math.round(T * .65) + 'ms ease-in-out ' + Math.round(T * .35) + 'ms';
+    [].forEach.call(s.querySelectorAll('.glow,.grid'), function(e){ e.style.transition = 'opacity ' + Math.round(T * .8) + 'ms ease-in-out ' + Math.round(T * .2) + 'ms'; e.style.opacity = 0; });
+    // 바탕은 방패가 절반쯤 옅어진 뒤부터 천천히 걷힙니다
+    s.style.transition = 'background-color ' + Math.round(T * .66) + 'ms ease-in-out ' + Math.round(T * .34) + 'ms';
     s.className = 'out';
     document.getElementById('tc').content = '#0c1a3d';   // 위쪽 상태바를 앱 머리 색으로
-    setTimeout(function(){ s.style.display = 'none'; }, T + 150);
+    setTimeout(function(){ s.style.display = 'none'; }, T + 200);
   }
+  // 안쪽 관리자 화면이 「준비됨」 을 알려 오면 (잠금 상자까지 다 그려진 뒤) 걷기 시작합니다.
+  // 예전 판 관리자 화면처럼 신호가 없으면, 화면을 다 받은 뒤 2.5초를 기다렸다가 걷습니다.
+  var readyT = null;
+  window.addEventListener('message', function(e){
+    var o = String(e.origin || '');
+    if (e.data === 'osf-admin-ready' && (/\.googleusercontent\.com$/.test(o) || o === 'https://script.google.com')) { clearTimeout(readyT); hide(); }
+  });
   function go(){
     done = false; s.className = ''; s.style.display = '';
     document.getElementById('fail').style.display = 'none'; document.getElementById('bar').style.display = '';
-    f.onload = hide; f.src = APP + (APP.indexOf('?') < 0 ? '?' : '&') + 'v=' + Date.now();
+    f.onload = function(){ clearTimeout(readyT); readyT = setTimeout(hide, 2500); }; f.src = APP + (APP.indexOf('?') < 0 ? '?' : '&') + 'v=' + Date.now();
     clearTimeout(slow);
     slow = setTimeout(function(){              // 15초가 넘으면 다시 시도 버튼
       if (done) return;
