@@ -20,6 +20,8 @@
 <link rel="preload" as="image" href="../logo-white.png">
 <link rel="preload" as="font" type="font/woff2" href="../splash-ko.woff2" crossorigin>
 <link rel="preload" as="font" type="font/woff2" href="../splash-en.woff2" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="../splash-ost.woff2" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="../splash-tl.woff2" crossorigin>
 <style>
   html,body{margin:0;height:100%;background:#0a1326;overflow:hidden}
   /* 폰마다 맨 위 시계 줄, 맨 아래 버튼·제스처 줄이 화면 위에 겹칠 수 있습니다(아이폰, 최신 안드로이드).
@@ -83,7 +85,7 @@
   #splash .seal .fill{fill:url(#gd);opacity:0;animation:sfill .9s ease-out .95s forwards}
   @keyframes sfill{0%{opacity:0}40%{opacity:.22}100%{opacity:.08}}
   #splash .logo{width:min(36vw,150px)}
-  #splash .line{margin-top:110px}
+  #splash .line{margin-top:16px}
   @keyframes ring{to{stroke-dashoffset:0}}
   @keyframes ringdim{to{opacity:.35}}
   @keyframes flash{0%{opacity:0;transform:translate(-50%,-50%) scale(.9)}35%{opacity:1}100%{opacity:0;transform:translate(-50%,-50%) scale(1.15)}}
@@ -106,20 +108,60 @@
   #fail{display:none;position:relative;margin-top:22px;text-align:center;color:#fff;font-size:15px;line-height:1.6}
   #fail button,#fail a{display:inline-block;margin:12px 4px 0;padding:11px 18px;border-radius:12px;border:0;font-size:15px;font-weight:700;text-decoration:none;cursor:pointer}
   #fail button{background:#f3c969;color:#2a1d05}#fail a{background:rgba(255,255,255,.14);color:#fff}
+
+  /* ── v5 더한 것 ──
+     로고 아래 「OUR SH#fff3d6NG FUTURE」 (OSF 뜻) : 첫 글자 O, S, F 가 먼저 굵게 빛나며 나타나고 (1.5초~), 나머지 글자가 첫 글자 뒤로 풀려 나옴 (1.9초~)
+     로고 위로 빛이 지나갈 때 O, S, F 가 그 빛과 같은 때 차례로 반짝임 */
+  @font-face{font-family:'OSF OST';src:url(../splash-ost.woff2) format('woff2');font-weight:500;font-display:block}
+  #splash .ost{position:relative;margin-top:102px;display:flex;gap:11px;font-size:11.5px;line-height:1;letter-spacing:4px;padding-left:4px;white-space:nowrap}
+  #splash .ost .w{display:inline-flex;align-items:baseline}
+  #splash .ost b{display:inline-block;font-size:13px;font-family:'OSF EN',sans-serif;font-weight:800;color:#fff3d6;text-shadow:0 0 10px rgba(243,201,105,.9);opacity:0;animation:ini .8s cubic-bezier(.16,1,.3,1) forwards}
+  #splash .ost i{display:inline-block;font-style:normal;font-family:'OSF OST','OSF EN',sans-serif;font-weight:500;color:#d9b46a;opacity:0;animation:unf .7s cubic-bezier(.4,0,.2,1) forwards}
+  @keyframes ini{0%{opacity:0;transform:scale(1.7);filter:blur(4px)}100%{opacity:1;transform:none;filter:blur(0)}}
+  @keyframes unf{0%{opacity:0;clip-path:inset(0 100% 0 0)}35%{opacity:.9}100%{opacity:.9;clip-path:inset(0 0 0 0)}}
+  /* 제목 문장 「Your check, our future」 : 아래 SAFETY FIRST 와 똑같은 글꼴 (Montserrat ExtraBold), Your check, 는 또렷하게 our future 는 옅게 (위 OUR SH#fff3d6NG FUTURE 와 강조가 겹치지 않게) */
+  @font-face{font-family:'OSF TL';src:url(../splash-tl.woff2) format('woff2');font-weight:800;font-display:block}
+  #splash .t{font-family:'OSF TL','OSF EN',sans-serif;font-size:18px;font-weight:800;letter-spacing:1px;padding-left:1px;white-space:nowrap}
+  #splash .t .a{opacity:.55}#splash .t b{font-weight:800}
+  #splash .adm{font-family:'OSF TL',sans-serif;font-weight:800;font-size:12px;letter-spacing:5px;padding:6px 14px 6px 19px}
+  /* 로고가 드러나는 끝을 따라가는 빛 선 */
+  #splash .edge{position:absolute;width:2px;margin-left:-1px;border-radius:2px;pointer-events:none;opacity:0;
+    background:linear-gradient(180deg,transparent,#fff 28%,#fff 72%,transparent);box-shadow:0 0 10px 2px rgba(245,190,80,.85)}
+  /* 멀리 있는 작은 빛 */
+  #splash .amb{position:absolute;inset:0;pointer-events:none}
+  #splash .amb i{position:absolute;border-radius:50%;background:#f3d27a;opacity:0;animation:tw var(--d) ease-in-out var(--dl) infinite}
+  @keyframes tw{0%,100%{opacity:0}50%{opacity:var(--o)}}
+  /* 글자 간격이 넓은 데서 천천히 좁혀지며 자리 잡음 */
+  #splash .ost{animation:trk 1.9s cubic-bezier(.16,1,.3,1) 1.45s both}
+  @keyframes trk{from{letter-spacing:7px;padding-left:7px;gap:17px}to{letter-spacing:4px;padding-left:4px;gap:11px}}
+  /* 로고 위 빛이 다 지나갈 때 로고 고리 끝에서 한 번 맺히는 가는 빛 (가로로 긴 빛 + 작은 별빛) */
+  #splash .glint{position:absolute;width:0;height:0;pointer-events:none;opacity:0}
+  #splash .glint::before{content:'';position:absolute;left:-70px;top:-1px;width:140px;height:2px;border-radius:2px;background:linear-gradient(90deg,transparent,rgba(243,201,105,.9) 35%,#fff 50%,rgba(243,201,105,.9) 65%,transparent)}
+  #splash .glint::after{content:'';position:absolute;left:-1px;top:-13px;width:2px;height:26px;border-radius:2px;background:linear-gradient(180deg,transparent,#fff 50%,transparent)}
+  #splash .glint i{position:absolute;left:-4px;top:-4px;width:8px;height:8px;border-radius:50%;background:#fff;box-shadow:0 0 12px 4px rgba(243,201,105,.9)}
+  /* 방패 테두리를 따라 금빛 하나가 한 바퀴 지나감 */
+  #splash .seal .run{fill:none;stroke:#fff6dc;stroke-width:1.6;stroke-linecap:round;stroke-dasharray:70 930;stroke-dashoffset:1000;opacity:0;
+    filter:drop-shadow(0 0 4px rgba(245,190,80,.95));animation:run 1.7s cubic-bezier(.45,0,.25,1) 2.05s forwards}
+  @keyframes run{0%{stroke-dashoffset:1000;opacity:0}10%{opacity:1}86%{opacity:1}100%{stroke-dashoffset:0;opacity:0}}
+  @media(prefers-reduced-motion:reduce){ #splash .seal .run{display:none} }
+  /* 차오르는 줄 끝 빛 */
+  #splash .b .pg i{box-shadow:0 0 8px rgba(243,201,105,.9)}
+  @media(prefers-reduced-motion:reduce){ #splash .ost b,#splash .ost i{animation-duration:.01s!important;animation-delay:0s!important} #splash .amb,#splash .edge,#splash .glint{display:none} #splash .ost{animation:none} }
 </style>
 </head>
 <body>
 <div id="splash" role="status" aria-live="polite">
-  <div class="glow"></div><div class="grid"></div>
-  <div class="lw"><div class="flash"></div><div class="seal sv"><svg viewBox="0 0 100 110"><defs><linearGradient id="gd" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff1c9"/><stop offset=".5" stop-color="#f3c969"/><stop offset="1" stop-color="#b8860b"/></linearGradient></defs><path class="fill" d="M50 5 L88 18 V52 C88 79 71 96 50 104 C29 96 12 79 12 52 V18 Z"/><path class="ring" d="M50 5 L88 18 V52 C88 79 71 96 50 104 C29 96 12 79 12 52 V18 Z" pathLength="1000"/><path class="ring2" d="M50 11 L82 22 V52 C82 74 68 89 50 96 C32 89 18 74 18 52 V22 Z" pathLength="1000"/></svg></div><div class="logo"><img src="../logo-white.png" alt="OSF" width="600" height="356" decoding="sync" draggable="false"></div></div>
+  <div class="glow"></div><div class="grid"></div><div class="amb" id="amb"></div>
+  <div class="lw"><div class="flash"></div><div class="seal sv"><svg viewBox="0 0 100 110"><defs><linearGradient id="gd" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff1c9"/><stop offset=".5" stop-color="#f3c969"/><stop offset="1" stop-color="#b8860b"/></linearGradient></defs><path class="fill" d="M50 5 L88 18 V52 C88 79 71 96 50 104 C29 96 12 79 12 52 V18 Z"/><path class="ring" d="M50 5 L88 18 V52 C88 79 71 96 50 104 C29 96 12 79 12 52 V18 Z" pathLength="1000"/><path class="ring2" d="M50 11 L82 22 V52 C82 74 68 89 50 96 C32 89 18 74 18 52 V22 Z" pathLength="1000"/><path class="run" d="M50 5 L88 18 V52 C88 79 71 96 50 104 C29 96 12 79 12 52 V18 Z" pathLength="1000"/></svg></div><div class="logo"><img src="../logo-white.png" alt="OSF" width="600" height="356" decoding="sync" draggable="false"></div></div>
+  <div class="ost" aria-label="Our Shining Future"><span class="w"><b>O</b><i>UR</i></span><span class="w"><b>S</b><i>HINING</i></span><span class="w"><b>F</b><i>UTURE</i></span></div>
   <div class="line"></div>
-  <div class="t">일일 안전확인</div>
-  <div class="adm">관리자</div>
+  <div class="t"><b>Your check,</b> <span class="a">our future</span></div>
+  <div class="adm">ADMIN</div>
   <div class="s">SAFETY FIRST</div>
   <div class="bar" id="bar"><i></i></div>
   <div id="fail">연결이 늦어지고 있습니다.<br>
     <button type="button" id="retry">다시 시도</button><a id="direct" target="_top" rel="noopener">브라우저로 열기</a></div>
-  <div class="b"><span class="pg"><i></i></span>OSF SOLUTION<small style="display:block;margin-top:-4px;font-size:9px;letter-spacing:2px;opacity:.55">v18</small></div>
+  <div class="b"><span class="pg"><i></i></span>OSF SOLUTION<small style="display:block;margin-top:-4px;font-size:9px;letter-spacing:2px;opacity:.55">v19</small></div>
 </div>
 <div id="topbar"></div>
 <iframe id="app" title="일일 안전확인" allow="clipboard-write" referrerpolicy="no-referrer"></iframe>
@@ -156,7 +198,44 @@
     for (var i=0;i<n;i++){ var e=document.createElement('i'); e.style.setProperty('--r',(i*360/n+(i%2?7:0))+'deg');
       e.style.animationDelay=(0.05+Math.random()*0.45).toFixed(2)+'s'; B.appendChild(e); } })();
   // 관리자 주소면 로고 아래 글을 「관리자 현황」으로
-  // 관리자 앱은 「일일 안전확인」 아래 금색 「관리자」 표시로 구분합니다
+  // 관리자 앱은 제목 문장 아래 금색 ADMIN 표시로 구분합니다
+  // ── v5 더한 것 ──
+  (function(){
+    var QK = typeof QUICK !== 'undefined' && QUICK, RMV = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var sd = 11, rnd = function(){ sd = (sd * 9301 + 49297) % 233280; return sd / 233280; };
+    // 멀리 있는 작은 빛
+    var AM = document.getElementById('amb');
+    for (var i = 0; i < 16; i++) { var d = document.createElement('i'), z = (1.1 + rnd() * 1.3).toFixed(1);
+      d.style.left = (rnd() * 100).toFixed(1) + '%'; d.style.top = (rnd() * 100).toFixed(1) + '%'; d.style.width = d.style.height = z + 'px';
+      d.style.setProperty('--o', (.15 + rnd() * .3).toFixed(2)); d.style.setProperty('--d', (3 + rnd() * 3).toFixed(2) + 's'); d.style.setProperty('--dl', (.4 + rnd() * 2.5).toFixed(2) + 's');
+      AM.appendChild(d); }
+    // OUR SHINING FUTURE : 첫 글자 O, S, F 먼저, 나머지 글자는 첫 글자 뒤로 풀려 나옴
+    var B = s.querySelectorAll('.ost b'), I = s.querySelectorAll('.ost i');
+    [].forEach.call(B, function(e, n){ e.style.animationDelay = ((QK ? .3 : 1.5) + n * (QK ? .05 : .12)).toFixed(2) + 's'; if (QK) e.style.animationDuration = '.5s'; });
+    [].forEach.call(I, function(e, n){ e.style.animationDelay = ((QK ? .45 : 1.9) + n * (QK ? .05 : .1)).toFixed(2) + 's'; if (QK) e.style.animationDuration = '.45s'; });
+    if (QK) { var OS = s.querySelector('.ost'); OS.style.animationDelay = '.25s'; OS.style.animationDuration = '.9s'; }
+    if (RMV) return;
+    // 로고 고리 오른쪽 끝에서 한 번 맺히는 가는 빛 (로고 위 빛이 다 지나갈 때)
+    setTimeout(function(){ try {
+      var L = s.querySelector('.logo'), r = L.getBoundingClientRect(), G = document.createElement('div');
+      if (!r.width || !G.animate) return;
+      G.className = 'glint'; G.innerHTML = '<i></i>'; G.style.left = (r.left + r.width * .975) + 'px'; G.style.top = (r.top + r.height * .27) + 'px'; s.appendChild(G);
+      G.animate([{opacity: 0, transform: 'scale(.3)'}, {opacity: 1, transform: 'scale(1)', offset: .3}, {opacity: 0, transform: 'scale(1.12)'}], {duration: 900, easing: 'cubic-bezier(.3,0,.3,1)', fill: 'forwards'});
+    } catch (e) {} }, QK ? 1000 : 2600);
+    // 로고 위로 빛이 지나갈 때 O, S, F 가 같은 때 차례로 반짝임
+    var SH = QK ? [600, 720, 840] : [2150, 2350, 2550];
+    [].forEach.call(B, function(e, n){ setTimeout(function(){ if (e.animate) e.animate([{textShadow: '0 0 10px rgba(243,201,105,.9)', transform: 'none'},
+      {textShadow: '0 0 4px #fff, 0 0 14px rgba(243,201,105,.9), 0 0 28px rgba(243,201,105,.9)', transform: 'scale(1.18)', offset: .35}, {textShadow: '0 0 10px rgba(243,201,105,.9)', transform: 'none'}], {duration: 650, easing: 'ease-in-out'}); }, SH[n]); });
+    // 로고가 드러나는 끝을 따라가는 빛 선 (로고가 드러나는 움직임과 같은 시간, 같은 빠르기)
+    if (QK) return;
+    try {
+      var L = s.querySelector('.logo'), r = L.getBoundingClientRect(), E = document.createElement('i');
+      if (!r.width || !E.animate) return;
+      E.className = 'edge'; E.style.left = r.left + 'px'; E.style.top = (r.top - r.height * .08) + 'px'; E.style.height = (r.height * 1.16) + 'px'; s.appendChild(E);
+      E.animate([{transform: 'translateX(0)'}, {transform: 'translateX(' + r.width.toFixed(1) + 'px)'}], {duration: 1100, delay: 950, easing: 'cubic-bezier(.2,.8,.2,1)', fill: 'forwards'});
+      E.animate([{opacity: 0}, {opacity: .95, offset: .08}, {opacity: .8, offset: .6}, {opacity: 0}], {duration: 1100, delay: 950, easing: 'linear', fill: 'forwards'});
+    } catch (e) {}
+  })();
   document.getElementById('direct').href = APP;
   function hide(){
     if (done) return; done = true; clearTimeout(slow);
@@ -171,12 +250,12 @@
   function land(){
     var T = 1800, RM = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (RM) T = 600;
-    var all = s.querySelectorAll('.glow,.grid,.flash,.logo,.logo img,.line,.t,.adm,.s,.b,.bar');
+    var all = s.querySelectorAll('.glow,.grid,.flash,.logo,.logo img,.ost,.line,.t,.adm,.s,.b,.bar,.amb');
     [].forEach.call(all, function(e){ var o = getComputedStyle(e).opacity; e.style.animation = 'none'; e.style.opacity = o; });
     // 방패 테두리 선은 손대지 않습니다 (멈추면 선이 다시 지워져 보임). 감싼 .lw 와 함께 옅어집니다
     void s.offsetWidth;                      // 지금 모습에서 이어서 움직이도록
     var ease = 'cubic-bezier(.4,0,.2,1)';
-    [].forEach.call(s.querySelectorAll('.line,.t,.adm,.s,.b,.bar'), function(e, i){
+    [].forEach.call(s.querySelectorAll('.ost,.line,.t,.adm,.s,.b,.bar,.amb'), function(e, i){
       var d = Math.round(i * 40);           // 위에서부터 차례로 아주 조금씩 늦게
       e.style.transition = 'opacity ' + Math.round(T * .42) + 'ms ' + ease + ' ' + d + 'ms,transform ' + Math.round(T * .42) + 'ms ' + ease + ' ' + d + 'ms';
       e.style.opacity = 0; e.style.transform = 'translateY(-6px)'; });
