@@ -170,6 +170,39 @@
   /* 4초가 넘을 때만 보이는 불러오기 줄도 밀기로 */
   #splash .bar i{left:0}
   @keyframes load{0%{transform:translateX(-100%)}100%{transform:translateX(250%)}}
+
+  /* ── v20 : 작업자 화면과 같은 연출을 금빛으로 (금색 방패는 그대로) ──
+     0.1초  방패 테두리가 그려지고, 0.25초부터 흩어진 금빛 입자 약 1,400개가 소용돌이치며 날아옴
+     1.05초 입자가 로고 모양으로 모이는 순간 짧은 빛 터짐, 그 자리에서 하얀 로고가 밝아지고 입자는 금빛 가루로 흩어짐
+     0.9초~ 금빛 오로라 띠가 흐름 · 폰을 기울이면 층마다 다른 깊이로 움직이고 방패는 입체로 기울어짐
+     1.8초  로고 위 금빛 → 2.2초 같은 방향으로 빛줄기가 글자를 쓸고 지나감 → 2.95초 ADMIN 알약이 튀어나옴
+     끝     방패가 앞으로 다가오고 가운데에서 금빛이 화면 가득 번진 뒤 걷히며 관리자 화면 (1.6초) */
+  #splash{perspective:900px}
+  #splash .aurgl{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;opacity:0;mix-blend-mode:screen;animation:aur2 1.8s ease-out .9s forwards}
+  @keyframes aur2{to{opacity:1}}
+  #splash .ptc{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+  #splash .logo{animation:none;opacity:1;transform:none}
+  #splash .logo img{opacity:0;animation:lgm .5s cubic-bezier(.4,0,.2,1) 1.05s forwards}
+  @keyframes lgm{to{opacity:1}}
+  #splash .edge,#splash .glint{display:none!important}
+  #splash .t{opacity:1;animation:none}
+  #splash .t .tw{display:inline-block;-webkit-mask-image:linear-gradient(90deg,#000 0,#000 44%,rgba(0,0,0,.35) 50%,transparent 56%);mask-image:linear-gradient(90deg,#000 0,#000 44%,rgba(0,0,0,.35) 50%,transparent 56%);
+    -webkit-mask-size:200% 100%;mask-size:200% 100%;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-position:100% 0;mask-position:100% 0;filter:blur(4px);
+    animation:trv .95s cubic-bezier(.45,0,.25,1) 2.2s forwards}
+  @keyframes trv{60%{filter:blur(.6px)}to{-webkit-mask-position:0 0;mask-position:0 0;filter:none}}
+  #splash .t::after{content:'';position:absolute;top:-4px;bottom:-4px;left:0;width:12px;margin-left:-6px;pointer-events:none;opacity:0;transform:skewX(-18deg);
+    background:linear-gradient(90deg,rgba(255,215,140,0),rgba(255,252,240,.95) 50%,rgba(255,215,140,0));box-shadow:0 0 14px 4px rgba(245,190,80,.45);border-radius:6px;filter:blur(.6px);mix-blend-mode:screen;
+    animation:tbar .95s cubic-bezier(.45,0,.25,1) 2.2s forwards}
+  @keyframes tbar{0%{left:0;opacity:0}14%{opacity:1}82%{opacity:.85}100%{left:100%;opacity:0}}
+  #splash .t .a{opacity:1;background:linear-gradient(90deg,#f3c969,#fff1c9 45%,#f3c969 90%);background-size:220% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:gsh 3s linear 2.6s infinite}
+  @keyframes gsh{to{background-position:-220% 0}}
+  #splash .adm{opacity:0;transform:scale(.6);animation:pill .6s cubic-bezier(.2,1.5,.4,1) 2.95s forwards;box-shadow:0 0 18px -4px rgba(243,201,105,.55)}
+  @keyframes pill{to{opacity:1;transform:none}}
+  #splash .s{animation-delay:3.15s}
+  #splash .blm{position:absolute;width:160vmax;height:160vmax;border-radius:50%;pointer-events:none;opacity:0;transform:translate(-50%,-50%) scale(.15);
+    background:radial-gradient(circle,rgba(255,252,242,1) 0,rgba(255,230,165,.85) 9%,rgba(250,195,95,.45) 22%,rgba(230,165,70,.14) 38%,rgba(200,140,50,.03) 52%,transparent 64%)}
+  @media(prefers-reduced-motion:reduce){ #splash .logo img{opacity:1;animation:none} #splash .t .tw{-webkit-mask-image:none;mask-image:none;filter:none;animation:none} #splash .t::after,#splash .blm{display:none}
+    #splash .adm{opacity:1;transform:none;animation:none} }
 </style>
 </head>
 <body>
@@ -184,7 +217,7 @@
   <div class="bar" id="bar"><i></i></div>
   <div id="fail">연결이 늦어지고 있습니다.<br>
     <button type="button" id="retry">다시 시도</button><a id="direct" target="_top" rel="noopener">브라우저로 열기</a></div>
-  <div class="b"><span class="pg"><i></i></span>OSF SOLUTION<small style="display:block;margin-top:-4px;font-size:9px;letter-spacing:2px;opacity:.55">v19</small></div>
+  <div class="b"><span class="pg"><i></i></span>OSF SOLUTION<small style="display:block;margin-top:-4px;font-size:9px;letter-spacing:2px;opacity:.55">v20</small></div>
 </div>
 <div id="topbar"></div>
 <iframe id="app" title="일일 안전확인" allow="clipboard-write" referrerpolicy="no-referrer"></iframe>
@@ -257,43 +290,148 @@
       E.animate([{opacity: 0}, {opacity: .95, offset: .08}, {opacity: .8, offset: .6}, {opacity: 0}], {duration: QK ? 620 : 1100, delay: QK ? 300 : 950, easing: 'linear', fill: 'forwards'});
     } catch (e) {}
   })();
+  // v20 (작업자 v23 과 같은 연출, 금빛) : 셰이더 오로라 + 입자 조립 (못 쓰는 폰, 움직임 줄이기 설정이면 건너뜀)
+  (function(){ try {
+    if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    var QK = typeof QUICK !== 'undefined' && QUICK, T0 = performance.now(), sec = function(){ return (performance.now() - T0) / 1000; };
+    var LITE = false; try { LITE = (navigator.deviceMemory && navigator.deviceMemory <= 2) || (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 2) || localStorage.getItem('splLite') === '1'; } catch (e) {}
+    var ref = s.querySelector('.lw'), DPR = LITE ? 1 : Math.min(2, window.devicePixelRatio || 1);
+    var FM = {l: 0, n: 0, s: 0, h: 0, lv: LITE ? 1 : 0}; window.__spl = FM; if (LITE) s.setAttribute('data-lite', '1');
+    // ① 셰이더 오로라
+    var cv = document.createElement('canvas'); cv.className = 'aurgl'; s.insertBefore(cv, ref);
+    var gl = LITE ? null : cv.getContext('webgl', {alpha: true, premultipliedAlpha: true, antialias: false, powerPreference: 'low-power'});
+    if (gl) {
+      var VS = 'attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}';
+      var FS = 'precision mediump float;uniform vec2 r;uniform float t;uniform float cy;' +
+        'float h(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}' +
+        'float n(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(h(i),h(i+vec2(1.,0.)),f.x),mix(h(i+vec2(0.,1.)),h(i+vec2(1.,1.)),f.x),f.y);}' +
+        'float fb(vec2 p){float v=0.,a=.5;for(int i=0;i<4;i++){v+=a*n(p);p*=2.03;a*=.5;}return v;}' +
+        'float rb(vec2 uv,float c,float s,float k){float w=(fb(vec2(uv.x*1.3+t*s,k+t*.07))-.5)*.34;float d=uv.y-c-w;float g=exp(-d*d*95.);' +
+        'float ry=.55+.45*fb(vec2(uv.x*22.+k*3.,t*.35+k));float fade=smoothstep(.0,.25,uv.x)*smoothstep(1.,.75,uv.x);return g*ry*fade*(.6+.4*smoothstep(-.06,.0,d));}' +
+        'void main(){vec2 uv=gl_FragCoord.xy/r;float c=1.-cy;' +
+        'float a1=rb(uv,c+.07,.05,1.),a2=rb(uv,c-.05,-.04,7.)*.75;' +
+        'vec3 c1=mix(vec3(1.,.76,.32),vec3(1.,.62,.3),uv.x);vec3 c2=mix(vec3(1.,.9,.6),vec3(.95,.72,.34),uv.x);' +
+        'vec3 col=c1*a1+c2*a2;float a=clamp(a1+a2,0.,1.)*.5;gl_FragColor=vec4(col*.5,a);}';
+      var sh = function(k, src){ var o = gl.createShader(k); gl.shaderSource(o, src); gl.compileShader(o); return gl.getShaderParameter(o, gl.COMPILE_STATUS) ? o : null; };
+      var v = sh(gl.VERTEX_SHADER, VS), f = sh(gl.FRAGMENT_SHADER, FS), pr = gl.createProgram();
+      if (v && f) { gl.attachShader(pr, v); gl.attachShader(pr, f); gl.linkProgram(pr); }
+      if (v && f && gl.getProgramParameter(pr, gl.LINK_STATUS)) {
+        gl.useProgram(pr); var bf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, bf); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1,1,-1,-1,1,1,1]), gl.STATIC_DRAW);
+        var lp = gl.getAttribLocation(pr, 'p'); gl.enableVertexAttribArray(lp); gl.vertexAttribPointer(lp, 2, gl.FLOAT, false, 0, 0);
+        var ur = gl.getUniformLocation(pr, 'r'), ut = gl.getUniformLocation(pr, 't'), uc = gl.getUniformLocation(pr, 'cy');
+        var cyv = (function(){ var q = ref.getBoundingClientRect(); return q.height ? (q.top + q.height / 2) / innerHeight : .44; })();
+        var size = function(){ var k = .5; cv.width = Math.max(2, innerWidth * k | 0); cv.height = Math.max(2, innerHeight * k | 0); gl.viewport(0, 0, cv.width, cv.height); }; size();
+        s.classList.add('gl');
+        var gt = function(){ if (!document.body.contains(cv)) return; gl.uniform2f(ur, cv.width, cv.height); gl.uniform1f(ut, sec() + 4.0); gl.uniform1f(uc, cyv); gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4); requestAnimationFrame(gt); };
+        requestAnimationFrame(gt);
+      } else cv.remove();
+    } else cv.remove();
+    // ② 입자 조립 : 로고 그림에서 점을 골라 목표 자리로
+    var img = s.querySelector('.logo img'), r = s.querySelector('.logo').getBoundingClientRect();
+    if (!img || !r.width) return;
+    var go = function(){
+      var W = Math.round(r.width), H = Math.round(r.height), oc = document.createElement('canvas'); oc.width = W; oc.height = H;
+      var ox = oc.getContext('2d'); ox.drawImage(img, 0, 0, W, H); var D = ox.getImageData(0, 0, W, H).data, pts = [];
+      var step = Math.max(2, Math.round(Math.sqrt(W * H / (LITE ? 1300 : 2600))));
+      for (var y = 0; y < H; y += step) for (var x = 0; x < W; x += step) if (D[(y * W + x) * 4 + 3] > 140) pts.push([r.left + x + (Math.random() - .5) * step, r.top + y + (Math.random() - .5) * step]);
+      if (pts.length < 50) return;
+      var pc = document.createElement('canvas'); pc.className = 'ptc'; s.insertBefore(pc, ref); pc.width = innerWidth * DPR; pc.height = innerHeight * DPR;
+      var c = pc.getContext('2d'); c.scale(DPR, DPR); c.globalCompositeOperation = 'lighter';
+      var cx = r.left + r.width / 2, cyy = r.top + r.height / 2, R = Math.hypot(innerWidth, innerHeight) * .62, A = QK ? .1 : .25, AR = QK ? .7 : 1.05, OUT = QK ? .55 : 1.25;
+      var P = pts.map(function(t){ var a = Math.random() * Math.PI * 2, d = R * (.55 + Math.random() * .6);
+        return {tx: t[0], ty: t[1], a0: a, d0: d, dl: Math.random() * .22, z: .55 + Math.pow(Math.random(), 2.2) * 1.9, br: .55 + Math.random() * .45, ph: Math.random() * 6.28, sw: (Math.random() < .5 ? -1 : 1) * (1.1 + Math.random() * .9),
+          bx: (Math.random() - .5) * 120, by: -40 - Math.random() * 140, sp: Math.random() < .18}; });
+      var ease = function(x){ return 1 - Math.pow(1 - x, 3); };
+      var fr = function(){
+        var nw = performance.now(); if (FM.l) { FM.n++; if (FM.n > 2 && nw - FM.l > 34) FM.s++; if (FM.n === 3) FM.w = nw;
+          if (FM.n % 10 === 0 && FM.n > 3) { var av = (nw - FM.w) / (FM.n === 10 ? 7 : 10); FM.w = nw;
+            if (FM.s >= 4) { FM.lv = av > 70 ? 2 : FM.lv + 1; s.setAttribute('data-lite', '1'); try { localStorage.setItem('splLite', '1'); } catch (e) {}
+              cv.remove(); s.classList.remove('gl'); if (FM.lv === 1) P = P.filter(function(p, i){ return i % 2 === 0; }); }
+            FM.s = 0; } }
+        if (FM.l && FM.n > 2 && nw - FM.l > 120 && ++FM.h >= 2 && FM.lv < 2) { FM.lv = 2; s.setAttribute('data-lite', '1'); try { localStorage.setItem('splLite', '1'); } catch (e) {} cv.remove(); }   // 한 장에 0.12초 넘게 두 번 걸리면 바로 2단계
+        FM.l = nw; if (FM.lv >= 2) { pc.remove(); return; }
+        var t = sec(); c.clearRect(0, 0, innerWidth, innerHeight);
+        // 다 모이는 순간 짧은 빛 터짐 (로고 가운데에서 퍼졌다가 0.45초 안에 사라짐)
+        var fl = t - AR; if (fl > -.06 && fl < .45) { var fk = Math.max(0, fl) / .45, fa = Math.pow(1 - fk, 2) * (fl < 0 ? (fl + .06) / .06 : 1) * .6, fr2 = r.width * (.35 + fk * .95);
+          var gg = c.createRadialGradient(cx, cyy, 0, cx, cyy, fr2); gg.addColorStop(0, 'rgba(255,248,228,' + fa.toFixed(3) + ')'); gg.addColorStop(.35, 'rgba(255,212,130,' + (fa * .45).toFixed(3) + ')'); gg.addColorStop(1, 'rgba(240,165,50,0)');
+          c.fillStyle = gg; c.fillRect(cx - fr2, cyy - fr2, fr2 * 2, fr2 * 2); }
+        if (t > OUT + .75) { pc.remove(); return; }
+        for (var i = 0; i < P.length; i++) { var p = P[i], u = (t - A - p.dl) / (AR - A - .22); if (u <= 0) continue; u = Math.min(1, u);
+          var e = ease(u), ang = p.a0 + p.sw * (1 - e), dd = p.d0 * (1 - e),
+              tx0 = p.tx - cx, ty0 = p.ty - cyy, x = cx + tx0 * e + Math.cos(ang) * dd, y = cyy + ty0 * e + Math.sin(ang) * dd, al = Math.min(1, u * 2.2) * .85;
+          if (t > OUT) { var k = (t - OUT) / .75; if (p.sp) { x += p.bx * ease(k); y += p.by * ease(k); al = (1 - k) * .95; } else al *= Math.max(0, 1 - k * 2.2); }
+          if (al <= 0) continue;
+          var wv = Math.min(1, Math.max(0, (u - .82) / .18)), tw = u >= 1 && t < OUT ? .75 + .25 * Math.sin(t * 18 + p.ph) : 1;   // 자리에 닿으면 흰빛, 작게 반짝임
+          var R = 255, G = 186 + 64 * wv | 0, Bc = 96 + 150 * wv | 0;
+          al *= p.br * tw; c.fillStyle = 'rgba(' + R + ',' + G + ',' + Bc + ',' + al.toFixed(3) + ')'; c.beginPath(); c.arc(x, y, p.z * (t > OUT && p.sp ? 1.3 : 1), 0, 6.283); c.fill();
+          if (FM.lv < 1 && p.z > 1.8 && al > .4) { c.fillStyle = 'rgba(' + R + ',' + G + ',' + Bc + ',' + (al * .18).toFixed(3) + ')'; c.beginPath(); c.arc(x, y, p.z * 3, 0, 6.283); c.fill(); } }
+        requestAnimationFrame(fr); };
+      requestAnimationFrame(fr);
+    };
+    if (img.complete && img.naturalWidth) go(); else img.addEventListener('load', go);
+  } catch (e) {} })();
+  // v20 : 기울기 3D (안드로이드는 바로, 아이폰은 기울기 사용 허락이 있어야 움직임)
+  (function(){ try {
+    if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    var tx = 0, ty = 0, cx = 0, cy = 0, run = false, b0 = null;
+    var L = [['.amb', 26], ['.aurgl', 18], ['.grid', 8], ['.ptc', 11], ['.glow', 6]];
+    var lg = s.querySelector('.lw');
+    function on(e){ if (e.gamma == null || e.beta == null) return; if (b0 == null) b0 = e.beta;   // 처음 잡은 각도를 기준으로 (들고 있는 자세 그대로)
+      tx = Math.max(-1, Math.min(1, e.gamma / 22)); ty = Math.max(-1, Math.min(1, (e.beta - b0) / 22)); if (!run) { run = true; requestAnimationFrame(step); } }
+    function step(){
+      if (!document.body.contains(s) || s.style.display === 'none') { window.removeEventListener('deviceorientation', on); return; }
+      cx += (tx - cx) * .07; cy += (ty - cy) * .07;
+      L.forEach(function(k){ [].forEach.call(s.querySelectorAll(k[0]), function(e){ e.style.translate = (cx * k[1]).toFixed(2) + 'px ' + (cy * k[1]).toFixed(2) + 'px'; }); });
+      if (lg) { lg.style.translate = (cx * 4).toFixed(2) + 'px ' + (cy * 4).toFixed(2) + 'px'; lg.style.rotate = (-cy).toFixed(3) + ' ' + cx.toFixed(3) + ' 0 ' + (Math.hypot(cx, cy) * 9).toFixed(2) + 'deg'; }
+      requestAnimationFrame(step); }
+    window.addEventListener('deviceorientation', on);
+  } catch (e) {} })();
+  // v23 : 글자를 한 겹 감싸서 빛 쓸기 (빛줄기는 감싼 바깥에 있어 가려지지 않음)
+  (function(){ var t = s.querySelector('.t'); if (t && !t.querySelector('.tw')) t.innerHTML = '<span class="tw">' + t.innerHTML + '</span>'; })();
   document.getElementById('direct').href = APP;
   function hide(){
     if (done) return; done = true; clearTimeout(slow);
     // 화면이 먼저 준비돼도 로고 연출은 끝까지 보여 줍니다
     setTimeout(land, Math.max(0, SHOW - (Date.now() - t0)));
   }
-  // 끝 : 스르륵 걷히기 (약 1.8초)
+  // 끝 : 방패가 앞으로 다가오며 금빛이 화면 가득 번진 뒤 걷힘 (1.6초)
   //   0.0초  글자 줄(구분선, 일일 안전확인, 관리자, SAFETY FIRST, 아래 OSF SOLUTION)이 살짝 위로 뜨며 먼저 옅어짐
   //   0.0초  방패와 로고는 제자리에서 아주 조금 커지며 천천히 옅어짐 (끝으로 갈수록 더 천천히)
   //   0.6초  뒤 금빛과 격자, 검은 바탕이 걷히며 안쪽 로그인 화면이 드러남
   //   모든 것이 다 옅어진 뒤에 화면에서 뺍니다. 중간에 뚝 꺼지는 것이 없게
   function land(){
-    var T = 1800, RM = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var T = 1600, RM = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (RM) T = 600;
-    var all = s.querySelectorAll('.glow,.grid,.flash,.logo,.logo img,.ost,.line,.t,.adm,.s,.b,.bar,.amb');
+    var all = s.querySelectorAll('.glow,.grid,.flash,.logo,.logo img,.ost,.line,.t,.adm,.s,.b,.bar,.amb,.aurgl');
     [].forEach.call(all, function(e){ var c = getComputedStyle(e), o = c.opacity, tf = c.transform; e.style.animation = 'none'; e.style.opacity = o; if (tf && tf !== 'none') e.style.transform = tf; });
-    // 방패 테두리 선은 손대지 않습니다 (멈추면 선이 다시 지워져 보임). 감싼 .lw 와 함께 옅어집니다
+    // 방패 테두리 선은 손대지 않습니다 (멈추면 선이 다시 지워져 보임). 감싼 .lw 와 함께 사라집니다
     void s.offsetWidth;                      // 지금 모습에서 이어서 움직이도록
     var ease = 'cubic-bezier(.4,0,.2,1)';
-    [].forEach.call(s.querySelectorAll('.ost,.line,.t,.adm,.s,.b,.bar,.amb'), function(e, i){
-      var d = Math.round(i * 40);           // 위에서부터 차례로 아주 조금씩 늦게
-      e.style.transition = 'opacity ' + Math.round(T * .42) + 'ms ' + ease + ' ' + d + 'ms,transform ' + Math.round(T * .42) + 'ms ' + ease + ' ' + d + 'ms';
-      e.style.opacity = 0; e.style.transform = 'translateY(-6px)'; });
+    // 글자 줄은 위에서부터 차례로 살짝 뜨며 먼저 빠짐
+    [].forEach.call(s.querySelectorAll('.ost,.line,.t,.adm,.s,.b,.bar,.amb,.aurgl,.grid'), function(e, i){
+      var d = Math.round(i * 30);
+      e.style.transition = 'opacity 550ms ' + ease + ' ' + d + 'ms,transform 550ms ' + ease + ' ' + d + 'ms';
+      e.style.opacity = 0; if (!/aurgl|grid|amb/.test(e.className)) e.style.transform = 'translateY(-6px)'; });
     var LW = s.querySelector('.lw');
-    LW.style.opacity = 0; LW.style.transform = 'scale(1.035)';
+    LW.style.opacity = 0; LW.style.transform = 'scale(1.18)';
+    // 방패 가운데에서 금빛이 화면 가득 번졌다가 걷힘
+    try { var rr = LW.getBoundingClientRect(), BL = document.createElement('div'); BL.className = 'blm';
+      BL.style.left = (rr.left + rr.width / 2) + 'px'; BL.style.top = (rr.top + rr.height / 2) + 'px'; s.appendChild(BL);
+      if (BL.animate && !RM) BL.animate([{opacity: 0, transform: 'translate(-50%,-50%) scale(.1)'}, {opacity: 1, transform: 'translate(-50%,-50%) scale(.55)', offset: .25},
+        {opacity: .7, transform: 'translate(-50%,-50%) scale(1.05)', offset: .6}, {opacity: 0, transform: 'translate(-50%,-50%) scale(1.7)'}], {duration: T * .8, easing: 'cubic-bezier(.25,.6,.3,1)', fill: 'forwards'}); } catch (e) {}
     if (LW.animate && !RM) {
-      // 눈은 옅은 빛의 변화에 예민해서, 진하기를 똑같은 빠르기로 빼면 끝에 「팍」 꺼져 보입니다.
-      // 진하기를 (1-t)^2.4 로 빼서 눈에 고르게 줄어들고, 끝으로 갈수록 더 천천히 사라지게 합니다.
+      // 방패와 로고는 앞으로 다가오며 밝아지고, 금빛이 가장 밝아지는 순간 빛 속으로 사라짐 (빛보다 오래 남지 않게)
+      var SLW = s.getAttribute('data-lite') === '1';
+      LW.animate(SLW ? [{transform: 'none'}, {transform: 'scale(1.18)'}] : [{transform: 'none', filter: 'none'}, {transform: 'scale(1.1)', filter: 'brightness(1.5) blur(1px)', offset: .3}, {transform: 'scale(1.18)', filter: 'brightness(1.8) blur(7px)'}], {duration: T, easing: 'cubic-bezier(.45,0,.25,1)'});
       var K = [];
-      for (var i = 0; i <= 24; i++) { var t = i / 24; K.push({opacity: Math.pow(1 - t, 2.4), transform: 'scale(' + (1 + .035 * (1 - Math.pow(1 - t, 2))).toFixed(4) + ')', offset: t}); }
+      for (var i = 0; i <= 20; i++) K.push({opacity: i / 20 <= .05 ? 1 : Math.pow(Math.max(0, 1 - (i / 20 - .05) / .2), 1.3), offset: i / 20});
       LW.animate(K, {duration: T, easing: 'linear'});
     } else {
       LW.style.transition = 'opacity ' + T + 'ms ease,transform ' + T + 'ms ease';
     }
-    [].forEach.call(s.querySelectorAll('.glow,.grid'), function(e){ e.style.transition = 'opacity ' + Math.round(T * .8) + 'ms ease-in-out ' + Math.round(T * .2) + 'ms'; e.style.opacity = 0; });
-    // 바탕은 방패가 절반쯤 옅어진 뒤부터 천천히 걷힙니다
-    s.style.setProperty('--bt', Math.round(T * .66) + 'ms'); s.style.setProperty('--bd', Math.round(T * .34) + 'ms');   // 바탕 층을 옅게
+    var G = s.querySelector('.glow'); G.style.transition = 'opacity ' + Math.round(T * .35) + 'ms ease-out'; G.style.opacity = 0;   // 방패 뒤 금빛도 함께 빠르게 (잔상 없음)
+    // 바탕은 금빛이 가장 밝을 때부터 걷힘 (금빛과 남색 앱 화면이 섞여 탁해 보이는 시간을 짧게)
+    s.style.setProperty('--bt', Math.round(T * .5) + 'ms'); s.style.setProperty('--bd', Math.round(T * .15) + 'ms');
     s.className = 'out';
     document.getElementById('tc').content = '#0c1a3d';   // 위쪽 상태바를 앱 머리 색으로
     setTimeout(function(){ s.style.display = 'none'; }, T + 200);
